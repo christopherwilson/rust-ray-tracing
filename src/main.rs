@@ -9,7 +9,20 @@ use colour::Colour;
 use crate::vec3::{Point3, Vec3};
 use crate::ray::Ray;
 
+fn hit_sphere(centre: Point3, radius: f64, r: &Ray) -> bool {
+    let oc = centre - r.origin();
+    let a = vec3::dot(r.direction(), r.direction());
+    let b = -2.0 * vec3::dot(r.direction(), oc);
+    let c = vec3::dot(oc, oc) - radius  * radius;
+    let discriminant = b * b - 4.0 * a * c;
+    discriminant >= 0.0
+}
+
 fn ray_colour(ray: &Ray) -> Colour {
+    if hit_sphere(Point3::new(0.0, 0.0, -1.0), 0.5, ray) {
+        return Colour::new(1.0, 0.0, 0.0);
+    }
+
     let unit_direction = vec3::unit_vector(ray.direction());
     let a = 0.5 * (unit_direction.y() + 1.0);
     (1.0 - a) * Colour::new(1.0, 1.0, 1.0) + a * Colour::new(0.5, 0.7, 1.0)
