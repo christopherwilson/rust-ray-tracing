@@ -1,6 +1,8 @@
 mod vec3;
 mod colour;
 mod ray;
+mod hittable;
+mod sphere;
 
 use std::io;
 
@@ -9,18 +11,28 @@ use colour::Colour;
 use crate::vec3::{Point3, Vec3};
 use crate::ray::Ray;
 
-fn hit_sphere(centre: Point3, radius: f64, r: &Ray) -> bool {
+fn hit_sphere(centre: Point3, radius: f64, r: &Ray) -> f64 {
     let oc = centre - r.origin();
-    let a = vec3::dot(r.direction(), r.direction());
-    let b = -2.0 * vec3::dot(r.direction(), oc);
-    let c = vec3::dot(oc, oc) - radius  * radius;
-    let discriminant = b * b - 4.0 * a * c;
-    discriminant >= 0.0
+    let a = r.direction().length_squared();
+    let h = vec3::dot(r.direction(), oc);
+    let c = oc.length_squared() - radius * radius;
+    let discriminant = h * h - a * c;
+
+    if discriminant < 0.0 {
+        -1.0
+    } else {
+        (h - f64::sqrt(discriminant)) / a
+    }
 }
 
 fn ray_colour(ray: &Ray) -> Colour {
-    if hit_sphere(Point3::new(0.0, 0.0, -1.0), 0.5, ray) {
-        return Colour::new(1.0, 0.0, 0.0);
+    let sphere_centre = Point3::new(0.0, 0.0, -1.0);
+    let t = hit_sphere(sphere_centre, 0.5, ray);
+
+    if t > 0.0 {
+        #[allow(non_snake_case)]
+        let N = vec3::unit_vector(ray.at(t) - sphere_centre);
+        return 0.5 * Colour::new(N.x() + 1.0, N.y() + 1.0, N.z() + 1.0)
     }
 
     let unit_direction = vec3::unit_vector(ray.direction());
