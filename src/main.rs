@@ -1,3 +1,4 @@
+mod common;
 mod vec3;
 mod colour;
 mod ray;
@@ -8,32 +9,16 @@ mod sphere;
 use std::io;
 
 use colour::Colour;
-
+use hittable::{HitRecord, Hittable};
+use hittable_list::HittableList;
 use crate::vec3::{Point3, Vec3};
 use crate::ray::Ray;
+use sphere::Sphere;
 
-fn hit_sphere(centre: Point3, radius: f64, r: &Ray) -> f64 {
-    let oc = centre - r.origin();
-    let a = r.direction().length_squared();
-    let h = vec3::dot(r.direction(), oc);
-    let c = oc.length_squared() - radius * radius;
-    let discriminant = h * h - a * c;
-
-    if discriminant < 0.0 {
-        -1.0
-    } else {
-        (h - f64::sqrt(discriminant)) / a
-    }
-}
-
-fn ray_colour(ray: &Ray) -> Colour {
-    let sphere_centre = Point3::new(0.0, 0.0, -1.0);
-    let t = hit_sphere(sphere_centre, 0.5, ray);
-
-    if t > 0.0 {
-        #[allow(non_snake_case)]
-        let N = vec3::unit_vector(ray.at(t) - sphere_centre);
-        return 0.5 * Colour::new(N.x() + 1.0, N.y() + 1.0, N.z() + 1.0)
+fn ray_colour(ray: &Ray, world: &dyn Hittable) -> Colour {
+    let mut rec = HitRecord::new();
+    if world.hit(ray, 0.0, f64::INFINITY, &mut rec) {
+        return 0.5 * (rec.normal + Colour::new(1.0, 1.0, 1.0));
     }
 
     let unit_direction = vec3::unit_vector(ray.direction());
@@ -53,6 +38,13 @@ fn main() {
 
     const VIEWPORT_HEIGHT: f64 = 2.0;
     const VIEWPORT_WIDTH: f64 = VIEWPORT_HEIGHT * (IMAGE_WIDTH as f64 / IMAGE_HEIGHT as f64);
+
+    // World
+
+    let mut world = HittableList::new();
+
+    world.add(Box::new(Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5)));
+    world.add(Box::new(Sphere::new(Point3::new(0.0, -100.5, -1.0), 100.0)));
 
     // Camera 
 
@@ -81,7 +73,7 @@ fn main() {
             let ray_direction = pixel_centre - camera_centre;
             let r = Ray::new(camera_centre, ray_direction);
 
-            let pixel_colour = ray_colour(&r);
+            let pixel_colour = ray_colour(&r, &world);
             colour::write_colour(&mut io::stdout(), pixel_colour);
         }
     }
