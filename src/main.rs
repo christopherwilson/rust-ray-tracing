@@ -2,6 +2,7 @@ mod vec3;
 mod colour;
 mod ray;
 mod hittable;
+mod hittable_list;
 mod sphere;
 
 use std::io;
