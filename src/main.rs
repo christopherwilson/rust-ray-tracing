@@ -5,6 +5,7 @@ mod ray;
 mod hittable;
 mod hittable_list;
 mod sphere;
+mod interval;
 
 use std::io;
 
@@ -14,10 +15,11 @@ use hittable_list::HittableList;
 use crate::vec3::{Point3, Vec3};
 use crate::ray::Ray;
 use sphere::Sphere;
+use interval::Interval;
 
 fn ray_colour(ray: &Ray, world: &dyn Hittable) -> Colour {
     let mut rec = HitRecord::new();
-    if world.hit(ray, 0.0, f64::INFINITY, &mut rec) {
+    if world.hit(ray, Interval::new(0.0, f64::INFINITY), &mut rec) {
         return 0.5 * (rec.normal + Colour::new(1.0, 1.0, 1.0));
     }
 
