@@ -15,11 +15,17 @@ pub struct Camera {
     pixel00_loc: Point3,
     pixel_delta: PixelDelta,
     samples_per_pixel: u32,
+    max_depth: u32,
 }
 
 impl Default for Camera {
     fn default() -> Self {
-        Camera::new(16.0 / 9.0, 400)
+        let aspect_ratio = 16.0 / 9.0;
+        let image_width = 400;
+        let samples_per_pixel = 100;
+        let max_depth = 50;
+
+        Camera::new(aspect_ratio, image_width, samples_per_pixel, max_depth)
     }
 }
 
@@ -35,7 +41,7 @@ impl Camera {
                 let mut pixel_colour = Colour::new(0.0, 0.0, 0.0);
                 for _sample in 0..self.samples_per_pixel {
                     let r = self.get_ray(i as f64, j as f64);
-                    pixel_colour += Camera::ray_colour(&r, world)
+                    pixel_colour += Camera::ray_colour(&r, self.max_depth, world)
                 }
                 colour::write_colour(&mut io::stdout(), pixel_colour / self.samples_per_pixel as f64);
             }
@@ -44,7 +50,7 @@ impl Camera {
         eprint!("\rDone.                 \n");
     }
 
-    pub fn new(aspect_ratio: f64, image_width: u32) -> Camera {
+    pub fn new(aspect_ratio: f64, image_width: u32, samples_per_pixel: u32, max_depth: u32) -> Camera {
         let image_height: u32 = (image_width as f64 / aspect_ratio) as u32;
         
         let center = Point3::new(0.0, 0.0, 0.0);
@@ -66,16 +72,19 @@ impl Camera {
 
         let pixel00_loc = viewport_upper_left + 0.5 * (pixel_delta.u + pixel_delta.v);
 
-        let samples_per_pixel = 100;
-
-        Camera { aspect_ratio, image_width, image_height, center, pixel00_loc, pixel_delta, samples_per_pixel }
+        Camera { aspect_ratio, image_width, image_height, center, pixel00_loc, pixel_delta, samples_per_pixel, max_depth }
     }
 
-    fn ray_colour(ray: &Ray, world: &dyn Hittable) -> Colour {
+    fn ray_colour(ray: &Ray, depth: u32, world: &dyn Hittable) -> Colour {
+        // If we've exceeded ray bounce limit, no more light is gathered
+        if depth <= 0 {
+            return Colour::new(0.0, 0.0, 0.0);
+        }
+
         let mut rec = HitRecord::new();
         if world.hit(ray, Interval::new(0.0, f64::INFINITY), &mut rec) {
             let direction = Vec3::random_on_hemisphere(&rec.normal);
-            return 0.5 * Camera::ray_colour(&Ray::new(rec.p, direction), world);
+            return 0.5 * Camera::ray_colour(&Ray::new(rec.p, direction), depth - 1, world);
         }
 
         let unit_direction = vec3::unit_vector(ray.direction());
