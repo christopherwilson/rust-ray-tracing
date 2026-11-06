@@ -1,5 +1,3 @@
-use rand::random;
-
 use crate::{colour::{self, Colour}, hittable::{HitRecord, Hittable}, interval::Interval, ray::Ray, vec3::{self, Point3, Vec3}};
 
 use std::io;
@@ -76,7 +74,8 @@ impl Camera {
     fn ray_colour(ray: &Ray, world: &dyn Hittable) -> Colour {
         let mut rec = HitRecord::new();
         if world.hit(ray, Interval::new(0.0, f64::INFINITY), &mut rec) {
-            return 0.5 * (rec.normal + Colour::new(1.0, 1.0, 1.0));
+            let direction = Vec3::random_on_hemisphere(&rec.normal);
+            return 0.5 * Camera::ray_colour(&Ray::new(rec.p, direction), world);
         }
 
         let unit_direction = vec3::unit_vector(ray.direction());
@@ -85,22 +84,13 @@ impl Camera {
     }
 
     pub fn get_ray(&self, u: f64, v: f64) -> Ray {
-        let offset = Camera::sample_square();
+        let offset = Vec3::sample_square();
         let pixel_sample = self.pixel00_loc 
                            + ((u + offset.x()) * self.pixel_delta.u)
                            + ((v + offset.y()) * self.pixel_delta.v);
         Ray::new(
             self.center, 
             pixel_sample - self.center
-        )
-    }
-
-    // Returns the vector to a random point in the [-.5, -.5]-[+.5,+.5] unit square.
-    fn sample_square() -> Vec3 {
-        Vec3::new(
-            random::<f64>() - 0.5, 
-            random::<f64>() - 0.5, 
-            0.0
         )
     }
 }

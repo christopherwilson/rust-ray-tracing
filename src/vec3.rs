@@ -1,5 +1,7 @@
 use std::fmt::{Display, Formatter, Result};
-use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub};
+use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Range, Sub};
+
+use rand::{random, random_range};
 
 #[derive(Copy, Clone, Default, PartialEq, Debug)]
 pub struct Vec3 {
@@ -29,6 +31,45 @@ impl Vec3 {
 
     pub fn length_squared(&self) -> f64 {
         self.e[0] * self.e[0] + self.e[1] * self.e[1] + self.e[2] * self.e[2] 
+    }
+
+    // Returns the vector to a random point in the [-.5, -.5]-[+.5,+.5] unit square.
+    pub fn sample_square() -> Vec3 {
+        Vec3::new(
+            random::<f64>() - 0.5, 
+            random::<f64>() - 0.5, 
+            0.0
+        )
+    }
+
+    pub fn random() -> Vec3 {
+        Vec3::new(random(), random(), random())
+    }
+
+    pub fn random_range(min: f64, max: f64) -> Vec3 {
+        return Vec3::new(
+            random_range(min..max),
+            random_range(min..max),
+            random_range(min..max)
+        )
+    }
+
+    pub fn random_unit_vector() -> Vec3 {
+        loop {
+            let p = Vec3::random_range(-1.0, 1.0);
+            if 1e-160 < p.length_squared() && p.length_squared() < 1.0 {
+                return p / p.length();
+            }
+        }
+    }
+
+    pub fn random_on_hemisphere(normal: &Vec3) -> Vec3 {
+        let on_unit_sphere = Vec3::random_unit_vector();
+        if dot(&on_unit_sphere, normal) > 0.0 {
+            return on_unit_sphere;
+        } else {
+            return -on_unit_sphere;
+        }
     }
 }
 
@@ -115,11 +156,11 @@ impl Neg for Vec3 {
     }
 }
 
-pub fn dot(u: Vec3, v: Vec3) -> f64 {
+pub fn dot(u: &Vec3, v: &Vec3) -> f64 {
     u.x() * v.x() + u.y() * v.y() + u.z() * v.z()
 }
 
-pub fn cross(u: Vec3, v: Vec3) -> Vec3 {
+pub fn cross(u: &Vec3, v: &Vec3) -> Vec3 {
     Vec3::new(
         u.y() * v.z() - u.z() * v.y(), 
         u.z() * v.x() - u.x() * v.z(), 
