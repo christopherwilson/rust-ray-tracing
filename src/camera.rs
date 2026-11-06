@@ -78,4 +78,11 @@ impl Camera {
         let a = 0.5 * (unit_direction.y() + 1.0);
         (1.0 - a) * Colour::new(1.0, 1.0, 1.0) + a * Colour::new(0.5, 0.7, 1.0)
     }
+
+    pub fn get_ray(&self, u: f64, v: f64) -> Ray {
+        Ray::new(
+            self.center, 
+            self.pixel00_loc + u * self.pixel_delta.u + v * self.pixel_delta.v - self.center,
+        )
+    }
 }
