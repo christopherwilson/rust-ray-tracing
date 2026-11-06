@@ -1,3 +1,5 @@
+use rand::random;
+
 use crate::{colour::{self, Colour}, hittable::{HitRecord, Hittable}, interval::Interval, ray::Ray, vec3::{self, Point3, Vec3}};
 
 use std::io;
@@ -14,6 +16,7 @@ pub struct Camera {
     center: Point3,
     pixel00_loc: Point3,
     pixel_delta: PixelDelta,
+    samples_per_pixel: u32,
 }
 
 impl Default for Camera {
@@ -31,12 +34,12 @@ impl Camera {
         for j in 0..self.image_height {
             eprint!("\rScanlines remaining: {} ", j);
             for i in 0..self.image_width {
-                let pixel_centre = self.pixel00_loc + (i as f64 * self.pixel_delta.u) + (j as f64 * self.pixel_delta.v);
-                let ray_direction = pixel_centre - self.center;
-                let r = Ray::new(self.center, ray_direction);
-
-                let pixel_colour = Camera::ray_colour(&r, world);
-                colour::write_colour(&mut io::stdout(), pixel_colour);
+                let mut pixel_colour = Colour::new(0.0, 0.0, 0.0);
+                for _sample in 0..self.samples_per_pixel {
+                    let r = self.get_ray(i as f64, j as f64);
+                    pixel_colour += Camera::ray_colour(&r, world)
+                }
+                colour::write_colour(&mut io::stdout(), pixel_colour / self.samples_per_pixel as f64);
             }
         }
 
@@ -65,7 +68,9 @@ impl Camera {
 
         let pixel00_loc = viewport_upper_left + 0.5 * (pixel_delta.u + pixel_delta.v);
 
-        Camera { aspect_ratio, image_width, image_height, center, pixel00_loc, pixel_delta }
+        let samples_per_pixel = 100;
+
+        Camera { aspect_ratio, image_width, image_height, center, pixel00_loc, pixel_delta, samples_per_pixel }
     }
 
     fn ray_colour(ray: &Ray, world: &dyn Hittable) -> Colour {
@@ -80,9 +85,22 @@ impl Camera {
     }
 
     pub fn get_ray(&self, u: f64, v: f64) -> Ray {
+        let offset = Camera::sample_square();
+        let pixel_sample = self.pixel00_loc 
+                           + ((u + offset.x()) * self.pixel_delta.u)
+                           + ((v + offset.y()) * self.pixel_delta.v);
         Ray::new(
             self.center, 
-            self.pixel00_loc + u * self.pixel_delta.u + v * self.pixel_delta.v - self.center,
+            pixel_sample - self.center
+        )
+    }
+
+    // Returns the vector to a random point in the [-.5, -.5]-[+.5,+.5] unit square.
+    fn sample_square() -> Vec3 {
+        Vec3::new(
+            random::<f64>() - 0.5, 
+            random::<f64>() - 0.5, 
+            0.0
         )
     }
 }
