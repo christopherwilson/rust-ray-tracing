@@ -9,6 +9,8 @@ mod interval;
 mod camera;
 mod material;
 
+use std::rc::Rc;
+
 use hittable_list::HittableList;
 use crate::vec3::Point3;
 use sphere::Sphere;

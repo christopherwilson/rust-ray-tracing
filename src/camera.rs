@@ -1,4 +1,4 @@
-use crate::{colour::{self, Colour}, hittable::{HitRecord, Hittable}, interval::Interval, ray::Ray, vec3::{self, Point3, Vec3}};
+use crate::{colour::{self, Colour}, hittable::Hittable, interval::Interval, ray::Ray, vec3::{self, Point3, Vec3}};
 
 use std::io;
 
@@ -81,8 +81,7 @@ impl Camera {
             return Colour::new(0.0, 0.0, 0.0);
         }
 
-        let mut rec = HitRecord::new();
-        if world.hit(ray, Interval::new(0.001, f64::INFINITY), &mut rec) {
+        if let Some(rec) = world.hit(ray, Interval::new(0.001, f64::INFINITY)) {
             let direction = rec.normal + Vec3::random_unit_vector();
             return 0.5 * Camera::ray_colour(&Ray::new(rec.p, direction), depth - 1, world);
         }
