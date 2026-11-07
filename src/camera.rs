@@ -77,7 +77,7 @@ impl Camera {
 
     fn ray_colour(ray: &Ray, depth: u32, world: &dyn Hittable) -> Colour {
         // If we've exceeded ray bounce limit, no more light is gathered
-        if depth <= 0 {
+        if depth == 0 {
             return Colour::new(0.0, 0.0, 0.0);
         }
 

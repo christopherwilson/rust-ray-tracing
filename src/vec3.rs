@@ -1,5 +1,5 @@
 use std::fmt::{Display, Formatter, Result};
-use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Range, Sub};
+use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub};
 
 use rand::{random, random_range};
 
@@ -52,7 +52,7 @@ impl Vec3 {
     }
 
     pub fn random_range(min: f64, max: f64) -> Vec3 {
-        return Vec3::new(
+        Vec3::new(
             random_range(min..max),
             random_range(min..max),
             random_range(min..max)
@@ -71,9 +71,9 @@ impl Vec3 {
     pub fn random_on_hemisphere(normal: &Vec3) -> Vec3 {
         let on_unit_sphere = Vec3::random_unit_vector();
         if dot(&on_unit_sphere, normal) > 0.0 {
-            return on_unit_sphere;
+            on_unit_sphere
         } else {
-            return -on_unit_sphere;
+            -on_unit_sphere
         }
     }
 }
@@ -291,7 +291,7 @@ mod tests {
         let v1 = Vec3::new(1.0, 2.0, 3.0);
         let v2 = Vec3::new(1.0, 2.0, 3.0);
 
-        assert_eq!(14.0, dot(v1,  v2))
+        assert_eq!(14.0, dot(&v1,  &v2))
     }
 
     #[test]
@@ -300,7 +300,7 @@ mod tests {
         let v2 = Vec3::new(5.0, 6.0, 7.0);
 
         let v_expected = Vec3::new(-3.0, 6.0, -3.0);
-        assert_eq!(v_expected, cross(v1,  v2))
+        assert_eq!(v_expected, cross(&v1, &v2))
     }
 
     #[test]
