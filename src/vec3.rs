@@ -33,6 +33,11 @@ impl Vec3 {
         self.e[0] * self.e[0] + self.e[1] * self.e[1] + self.e[2] * self.e[2] 
     }
 
+    pub fn near_zero(&self) -> bool {
+        const EPSILON: f64 = 1e-8;
+        self.e[0].abs() < EPSILON && self.e[1].abs() < EPSILON && self.e[2].abs() < EPSILON
+    }
+
     // Returns the vector to a random point in the [-.5, -.5]-[+.5,+.5] unit square.
     pub fn sample_square() -> Vec3 {
         Vec3::new(
