@@ -1,4 +1,4 @@
-use crate::{colour::Colour, hittable::HitRecord, ray::Ray, vec3::Vec3};
+use crate::{colour::Colour, hittable::HitRecord, ray::Ray, vec3::{self, Vec3}};
 
 pub struct ScatterRecord {
     pub attenuation: Colour,
@@ -31,6 +31,26 @@ impl Material for Lambertian {
         Some(ScatterRecord { 
             attenuation: self.albedo, 
             scattered: Ray::new(rec.p, scatter_direction),
+        })
+    }
+}
+
+pub struct Metal {
+    albedo: Colour,
+}
+
+impl Metal {
+    pub fn new(albedo: Colour) -> Metal {
+        Metal { albedo }
+    }
+}
+
+impl Material for Metal {
+    fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<ScatterRecord> {
+        let reflected = vec3::reflect(r_in.direction(), rec.normal);
+        Some(ScatterRecord { 
+            attenuation: self.albedo, 
+            scattered: Ray::new(rec.p, reflected) 
         })
     }
 }

@@ -9,15 +9,12 @@ use crate::vec3::{self, Point3};
 pub struct Sphere {
     centre: Point3,
     radius: f64,
-    // material: Rc<dyn Material>
+    material: Rc<dyn Material>
 }
 
 impl Sphere {
-    // pub fn new(centre: Point3, radius: f64, material: Rc<dyn Material>) -> Sphere {
-    //     Sphere { centre, radius, material }
-    // }
-    pub fn new(centre: Point3, radius: f64) -> Sphere {
-        Sphere { centre, radius }
+    pub fn new(centre: Point3, radius: f64, material: Rc<dyn Material>) -> Sphere {
+        Sphere { centre, radius, material }
     }
 }
 
@@ -49,7 +46,7 @@ impl Hittable for Sphere {
         rec.p = ray.at(rec.t);
         let outward_normal = (rec.p - self.centre) / self.radius;
         rec.set_face_normal(ray, outward_normal);
-        // rec.material = Some(self.material.clone());
+        rec.material = Some(self.material.clone());
         Some(rec)
     }
 }
