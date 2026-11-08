@@ -1,3 +1,5 @@
+use rand::random;
+
 use crate::{colour::Colour, hittable::HitRecord, ray::Ray, vec3::{self, Vec3}};
 
 pub struct ScatterRecord {
@@ -65,6 +67,12 @@ impl Dielectric {
     pub fn new(refraction_index: f64) -> Dielectric {
         Dielectric { refraction_index }
     }
+
+    fn reflectance(&self, cosine: f64) -> f64 {
+        let r0 = (1.0 - self.refraction_index) / (1.0 + self.refraction_index);
+        let r0 = r0 * r0;
+        r0 + (1.0 - r0) * (1.0 - cosine).powi(5)
+    }
 }
 
 impl Material for Dielectric {
@@ -83,7 +91,7 @@ impl Material for Dielectric {
         
         let cant_refract = ri * sin_theta > 1.0;
 
-        let direction = if cant_refract {
+        let direction = if cant_refract || self.reflectance(cos_theta) > random() {
             vec3::reflect(unit_direction, rec.normal)
         } else {
             vec3::refract(unit_direction, rec.normal, ri)
