@@ -38,27 +38,34 @@ impl Camera {
         eprint!("\rDone.                 \n");
     }
 
-    pub fn new(aspect_ratio: f64, image_width: u32, samples_per_pixel: u32, max_depth: u32, vfov: f64) -> Camera {
+    pub fn new(aspect_ratio: f64, image_width: u32, samples_per_pixel: u32, max_depth: u32, vfov: f64, lookfrom: Point3, lookat: Point3, vup: Vec3) -> Camera {
         let image_height: u32 = (image_width as f64 / aspect_ratio) as u32;
         
-        let center = Point3::new(0.0, 0.0, 0.0);
+        let center = lookfrom;
 
         // Viewport dimensions
-        let focal_length = 1.0;
+        let focal_length = (lookfrom - lookat).length();
         let theta = degrees_to_radians(vfov);
         let h = f64::tan(theta / 2.0);
         let viewport_height = 2.0 * h * focal_length;
         let viewport_width: f64 = viewport_height * (image_width as f64 / image_height as f64);
 
-        let viewport_u = Vec3::new(viewport_width, 0.0, 0.0);
-        let viewport_v = Vec3::new(0.0, -viewport_height, 0.0);
+        // Calculating u, v, w, unit basiis vectors for the camera coordinate frame
+
+        let w = vec3::unit_vector(lookfrom - lookat);
+        let u = vec3::unit_vector(vec3::cross(&vup, &w));
+        let v = vec3::cross(&w, &u);
+
+        // Calculate the vectors across the horizontal and down the vertical viewport edges.
+        let viewport_u = viewport_width * u;
+        let viewport_v = viewport_height * -v;
 
         let pixel_delta = PixelDelta {
             u: viewport_u / image_width as f64,
             v: viewport_v / image_height as f64,
         };
 
-        let viewport_upper_left = center - Vec3::new(0.0, 0.0, focal_length) - viewport_u / 2.0 - viewport_v / 2.0;
+        let viewport_upper_left = center - (focal_length * w) - viewport_u / 2.0 - viewport_v / 2.0;
 
         let pixel00_loc = viewport_upper_left + 0.5 * (pixel_delta.u + pixel_delta.v);
 
@@ -95,5 +102,21 @@ impl Camera {
             self.center, 
             pixel_sample - self.center
         )
+    }
+}
+
+impl Default for Camera {
+    fn default() -> Self {
+        let aspect_ratio = 1.0;
+        let image_width = 100;
+        let samples_per_pixel = 10;
+        let max_depth = 10;
+
+        let vfov = 90.0;
+        let lookfrom = Point3::new(0.0, 0.0, 0.0);
+        let lookat = Point3::new(0.0, 0.0, 0.0);
+        let vup = Vec3::new(0.0, 0.0, 0.0);
+
+        Camera::new(aspect_ratio, image_width, samples_per_pixel, max_depth, vfov, lookfrom, lookat, vup)
     }
 }
