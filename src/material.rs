@@ -37,20 +37,22 @@ impl Material for Lambertian {
 
 pub struct Metal {
     albedo: Colour,
+    fuzz: f64,
 }
 
 impl Metal {
-    pub fn new(albedo: Colour) -> Metal {
-        Metal { albedo }
+    pub fn new(albedo: Colour, fuzz: f64) -> Metal {
+        Metal { albedo, fuzz }
     }
 }
 
 impl Material for Metal {
     fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<ScatterRecord> {
         let reflected = vec3::reflect(r_in.direction(), rec.normal);
+        let fuzzy_reflected = vec3::unit_vector(reflected) + (self.fuzz * Vec3::random_unit_vector());
         Some(ScatterRecord { 
             attenuation: self.albedo, 
-            scattered: Ray::new(rec.p, reflected) 
+            scattered: Ray::new(rec.p, fuzzy_reflected) 
         })
     }
 }
