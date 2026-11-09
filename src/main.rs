@@ -9,7 +9,6 @@ mod interval;
 mod camera;
 mod material;
 
-use std::f64::consts::PI;
 use std::rc::Rc;
 
 use hittable_list::HittableList;
@@ -20,8 +19,9 @@ use material::Lambertian;
 use material::Metal;
 use colour::Colour;
 use material::Dielectric;
+use vec3::Vec3;
 
-use crate::vec3::Vec3;
+use crate::camera::CameraParams;
 
 
 fn main() {
@@ -42,20 +42,22 @@ fn main() {
     world.add(Box::new(Sphere::new(Point3::new( 1.0,  0.0, -1.0), 0.5, material_right)));
 
     // Camera
-    let aspect_ratio = 16.0 / 9.0;
-    let image_width = 400;
-    let samples_per_pixel = 100;
-    let max_depth = 50;
+    let cam_params = CameraParams {
+        aspect_ratio: 16.0 / 9.0,
+        image_width: 400,
+        samples_per_pixel: 100,
+        max_depth: 50,
 
-    let vfov = 20.0;
-    let lookfrom = Point3::new(-2.0, 2.0, 1.0);
-    let lookat = Point3::new(0.0, 0.0, -1.0);
-    let vup = Vec3::new(0.0, 1.0, 0.0);
+        vfov: 20.0,
+        lookfrom: Point3::new(-2.0, 2.0, 1.0),
+        lookat: Point3::new(0.0, 0.0, -1.0),
+        vup: Vec3::new(0.0, 1.0, 0.0),
 
-    let defocus_angle = 10.0;
-    let focus_dist = 3.4;
+        defocus_angle: 10.0,
+        focus_dist: 3.4,
+    };
 
-    let camera = Camera::new(aspect_ratio, image_width, samples_per_pixel, max_depth, vfov, lookfrom, lookat, vup, defocus_angle, focus_dist);
+    let camera = Camera::new(cam_params);
 
     camera.render(&world);
 }

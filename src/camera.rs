@@ -7,6 +7,21 @@ struct PixelDelta {
     v: Vec3,
 }
 
+pub struct CameraParams {
+    pub aspect_ratio: f64,
+    pub image_width: u32,
+    pub samples_per_pixel: u32,
+    pub max_depth: u32,
+
+    pub vfov: f64,
+    pub lookfrom: Point3,
+    pub lookat: Point3,
+    pub vup: Vec3,
+
+    pub defocus_angle: f64,
+    pub focus_dist: f64,
+}
+
 pub struct Camera {
     image_width: u32,
     image_height: u32,
@@ -41,7 +56,7 @@ impl Camera {
         eprint!("\rDone.                 \n");
     }
 
-    pub fn new(aspect_ratio: f64, image_width: u32, samples_per_pixel: u32, max_depth: u32, vfov: f64, lookfrom: Point3, lookat: Point3, vup: Vec3, defocus_angle: f64, focus_dist: f64) -> Camera {
+    pub fn new(CameraParams { aspect_ratio, image_width, samples_per_pixel, max_depth, vfov, lookfrom, lookat, vup, defocus_angle, focus_dist }: CameraParams) -> Camera {
         let image_height: u32 = (image_width as f64 / aspect_ratio) as u32;
         
         let center = lookfrom;
@@ -127,19 +142,21 @@ impl Camera {
 
 impl Default for Camera {
     fn default() -> Self {
-        let aspect_ratio = 1.0;
-        let image_width = 100;
-        let samples_per_pixel = 10;
-        let max_depth = 10;
+        let params = CameraParams {
+            aspect_ratio: 1.0,
+            image_width: 100,
+            samples_per_pixel: 10,
+            max_depth: 10,
 
-        let vfov = 90.0;
-        let lookfrom = Point3::new(0.0, 0.0, 0.0);
-        let lookat = Point3::new(0.0, 0.0, 0.0);
-        let vup = Vec3::new(0.0, 0.0, 0.0);
+            vfov: 90.0,
+            lookfrom: Point3::new(0.0, 0.0, 0.0),
+            lookat: Point3::new(0.0, 0.0, 0.0),
+            vup: Vec3::new(0.0, 0.0, 0.0),
 
-        let defocus_angle = 0.0;
-        let focus_dist = 10.0;
+            defocus_angle: 0.0,
+            focus_dist: 10.0,
+        };
 
-        Camera::new(aspect_ratio, image_width, samples_per_pixel, max_depth, vfov, lookfrom, lookat, vup, defocus_angle, focus_dist)
+        Camera::new(params)
     }
 }
