@@ -1,6 +1,7 @@
 use crate::{colour::{self, Colour}, common::degrees_to_radians, hittable::Hittable, interval::Interval, material::ScatterRecord, ray::Ray, vec3::{self, Point3, Vec3}};
 
-use std::{io, rc::Rc};
+use std::{io, sync::Arc};
+use rayon::prelude::*;
 
 struct PixelDelta {
     u: Vec3,
@@ -43,12 +44,18 @@ impl Camera {
 
         for j in 0..self.image_height {
             eprint!("\rScanlines remaining: {} ", self.image_height - j);
-            for i in 0..self.image_width {
-                let mut pixel_colour = Colour::new(0.0, 0.0, 0.0);
-                for _sample in 0..self.samples_per_pixel {
-                    let r = self.get_ray(i as f64, j as f64);
-                    pixel_colour += Camera::ray_colour(&r, self.max_depth, world)
-                }
+            let pixel_colours: Vec<_> = (0..self.image_width)
+                .into_par_iter()
+                .map(|i| {
+                    let mut pixel_colour = Colour::new(0.0, 0.0, 0.0);
+                    for _sample in 0..self.samples_per_pixel {
+                        let r = self.get_ray(i as f64, j as f64);
+                        pixel_colour += Camera::ray_colour(&r, self.max_depth, world)
+                    }
+                    pixel_colour
+                })
+                .collect();
+            for pixel_colour in pixel_colours {
                 colour::write_colour(&mut io::stdout(), pixel_colour / self.samples_per_pixel as f64);
             }
         }
@@ -101,11 +108,8 @@ impl Camera {
         }
 
         if let Some(rec) = world.hit(ray, Interval::new(0.001, f64::INFINITY)) {
-            if let Some(mat) = &rec.material {
-                let mat = Rc::clone(mat);
-                if let Some(ScatterRecord { attenuation, scattered }) = mat.scatter(ray, &rec) {
-                    return attenuation * Camera::ray_colour(&scattered, depth - 1, world);
-                }
+            if let Some(ScatterRecord { attenuation, scattered }) = rec.material.scatter(ray, &rec) {
+                return attenuation * Camera::ray_colour(&scattered, depth - 1, world);
             }
             return Colour::new(0.0, 0.0, 0.0);
         }
