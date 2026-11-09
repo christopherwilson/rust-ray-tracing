@@ -1,6 +1,7 @@
 use crate::{colour::{self, Colour}, common::degrees_to_radians, hittable::Hittable, interval::Interval, material::ScatterRecord, ray::Ray, vec3::{self, Point3, Vec3}};
 
-use std::{io, sync::Arc};
+use std::io;
+use rand::random;
 use rayon::prelude::*;
 
 struct PixelDelta {
@@ -131,10 +132,12 @@ impl Camera {
             self.defocus_disc_sample()
         };
         let ray_direction = pixel_sample - ray_origin;
+        let ray_time: f64 = random();
 
         Ray::new(
             ray_origin,
-            ray_direction
+            ray_direction,
+            ray_time
         )
     }
 
