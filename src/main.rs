@@ -52,7 +52,10 @@ fn main() {
     let lookat = Point3::new(0.0, 0.0, -1.0);
     let vup = Vec3::new(0.0, 1.0, 0.0);
 
-    let camera = Camera::new(aspect_ratio, image_width, samples_per_pixel, max_depth, vfov, lookfrom, lookat, vup);
+    let defocus_angle = 10.0;
+    let focus_dist = 3.4;
+
+    let camera = Camera::new(aspect_ratio, image_width, samples_per_pixel, max_depth, vfov, lookfrom, lookat, vup, defocus_angle, focus_dist);
 
     camera.render(&world);
 }
