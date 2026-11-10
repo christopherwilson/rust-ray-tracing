@@ -4,23 +4,29 @@ use crate::hittable::{HitRecord, Hittable};
 use crate::interval::Interval;
 use crate::material::Material;
 use crate::ray::Ray;
-use crate::vec3::{self, Point3};
+use crate::vec3::{self, Point3, Vec3};
 
 pub struct Sphere {
-    centre: Point3,
+    centre: Ray,
     radius: f64,
     material: Arc<dyn Material>
 }
 
 impl Sphere {
-    pub fn new(centre: Point3, radius: f64, material: Arc<dyn Material>) -> Sphere {
+    pub fn new(centre: Point3, end_centre: Option<Point3>, radius: f64, material: Arc<dyn Material>) -> Sphere {
+        let centre = if let Some(end_centre) = end_centre {
+            Ray::new(centre, end_centre - centre, 0.0)
+        } else {
+            Ray::new(centre, Vec3::zero(), 0.0)
+        };
         Sphere { centre, radius, material }
     }
 }
 
 impl Hittable for Sphere {
     fn hit(&self, ray: &Ray, ray_t: Interval) -> Option<HitRecord> {
-        let oc = self.centre - ray.origin();
+        let current_centre = self.centre.at(ray.time());
+        let oc = current_centre - ray.origin();
         let a = ray.direction().length_squared();
         let h = vec3::dot(&ray.direction(), &oc);
         let c = oc.length_squared() - self.radius * self.radius;
@@ -48,7 +54,7 @@ impl Hittable for Sphere {
             normal: Default::default(),
             front_face: Default::default(),
         };
-        let outward_normal = (rec.p - self.centre) / self.radius;
+        let outward_normal = (rec.p - current_centre) / self.radius;
         rec.set_face_normal(ray, outward_normal);
         Some(rec)
     }

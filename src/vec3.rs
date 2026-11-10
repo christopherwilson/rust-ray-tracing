@@ -85,6 +85,10 @@ impl Vec3 {
             }
         }
     }
+
+    pub fn zero() -> Vec3 {
+        Vec3::new(0.0, 0.0, 0.0)
+    }
 }
 
 pub type Point3 = Vec3;
