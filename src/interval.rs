@@ -1,3 +1,5 @@
+use crate::common::{fmax, fmin};
+
 #[derive(Clone, Copy)]
 pub struct Interval {
     pub min: f64,
@@ -12,6 +14,12 @@ impl Default for Interval {
 
 impl Interval {
     pub fn new(min: f64, max: f64) -> Self {
+        Interval { min, max }
+    }
+
+    pub fn combine(a: &Interval, b: &Interval) -> Self {
+        let min = fmin(a.min, b.min);
+        let max = fmax(a.max, b.max);
         Interval { min, max }
     }
 

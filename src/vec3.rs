@@ -93,6 +93,10 @@ impl Vec3 {
     pub fn zero() -> Vec3 {
         Vec3::new(0.0, 0.0, 0.0)
     }
+
+    pub fn pure_diagonal(n: f64) -> Self {
+        Vec3::new(n, n, n)
+    }
 }
 
 pub type Point3 = Vec3;

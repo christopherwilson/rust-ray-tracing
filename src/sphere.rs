@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+use crate::aabb::AABB;
 use crate::hittable::{HitRecord, Hittable};
 use crate::interval::Interval;
 use crate::material::Material;
@@ -9,17 +10,24 @@ use crate::vec3::{self, Point3, Vec3};
 pub struct Sphere {
     centre: Ray,
     radius: f64,
-    material: Arc<dyn Material>
+    material: Arc<dyn Material>,
+    bbox: AABB,
 }
 
 impl Sphere {
     pub fn new(centre: Point3, end_centre: Option<Point3>, radius: f64, material: Arc<dyn Material>) -> Sphere {
-        let centre = if let Some(end_centre) = end_centre {
-            Ray::new(centre, end_centre - centre, 0.0)
+        let rvec = Vec3::pure_diagonal(radius);
+        let (centre, bbox) = if let Some(end_centre) = end_centre {
+            let centre = Ray::new(centre, end_centre - centre, 0.0);
+            let box0 = AABB::from_point3s(centre.at(0.0) - rvec, centre.at(0.0) + rvec);
+            let box1 = AABB::from_point3s(centre.at(1.0) - rvec, centre.at(1.0) + rvec);
+            let bbox = AABB::combine(&box0, &box1);
+            (centre, bbox)
         } else {
-            Ray::new(centre, Vec3::zero(), 0.0)
+            let bbox = AABB::from_point3s(centre - rvec, centre + rvec);
+            (Ray::new(centre, Vec3::zero(), 0.0), bbox)
         };
-        Sphere { centre, radius, material }
+        Sphere { centre, radius, material, bbox }
     }
 }
 
@@ -57,5 +65,9 @@ impl Hittable for Sphere {
         let outward_normal = (rec.p - current_centre) / self.radius;
         rec.set_face_normal(ray, outward_normal);
         Some(rec)
+    }
+
+    fn bounding_box(&self) -> AABB {
+        self.bbox
     }
 }
