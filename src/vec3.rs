@@ -13,6 +13,10 @@ impl Vec3 {
         Vec3 { e: [x, y, z] }
     }
 
+    pub fn get(&self, n: usize) -> f64 {
+        self.e[n]
+    }
+
     pub fn x(&self) -> f64 {
         self.e[0]
     }

@@ -8,6 +8,7 @@ mod material;
 mod ray;
 mod sphere;
 mod vec3;
+mod aabb;
 
 use std::sync::Arc;
 
