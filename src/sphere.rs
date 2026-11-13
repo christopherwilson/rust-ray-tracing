@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use crate::aabb::AABB;
-use crate::hittable::{HitRecord, Hittable};
+use crate::hittable::{Hit, HitRecord, Hittable};
 use crate::interval::Interval;
 use crate::material::Material;
 use crate::ray::Ray;
@@ -32,7 +32,7 @@ impl Sphere {
 }
 
 impl Hittable for Sphere {
-    fn hit(&self, ray: &Ray, ray_t: Interval) -> Option<HitRecord> {
+    fn hit(&self, ray: &Ray, ray_t: Interval) -> Option<Hit> {
         let current_centre = self.centre.at(ray.time());
         let oc = current_centre - ray.origin();
         let a = ray.direction().length_squared();
@@ -64,7 +64,7 @@ impl Hittable for Sphere {
         };
         let outward_normal = (rec.p - current_centre) / self.radius;
         rec.set_face_normal(ray, outward_normal);
-        Some(rec)
+        Some(Hit::Record(rec))
     }
 
     fn bounding_box(&self) -> AABB {

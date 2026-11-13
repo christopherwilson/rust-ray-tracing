@@ -1,4 +1,4 @@
-use crate::{colour::{self, Colour}, common::degrees_to_radians, hittable::Hittable, interval::Interval, material::ScatterRecord, ray::Ray, vec3::{self, Point3, Vec3}};
+use crate::{colour::{self, Colour}, common::degrees_to_radians, hittable::{Hit, Hittable}, interval::Interval, material::ScatterRecord, ray::Ray, vec3::{self, Point3, Vec3}};
 
 use std::io;
 use rand::random;
@@ -108,7 +108,7 @@ impl Camera {
             return Colour::new(0.0, 0.0, 0.0);
         }
 
-        if let Some(rec) = world.hit(ray, Interval::new(0.001, f64::INFINITY)) {
+        if let Some(Hit::Record(rec)) = world.hit(ray, Interval::new(0.001, f64::INFINITY)) {
             if let Some(ScatterRecord { attenuation, scattered }) = rec.material.scatter(ray, &rec) {
                 return attenuation * Camera::ray_colour(&scattered, depth - 1, world);
             }

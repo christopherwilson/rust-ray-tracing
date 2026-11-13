@@ -9,6 +9,7 @@ mod ray;
 mod sphere;
 mod vec3;
 mod aabb;
+mod bvh;
 
 use std::sync::Arc;
 

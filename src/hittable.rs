@@ -6,6 +6,10 @@ use crate::material::Material;
 use crate::ray::Ray;
 use crate::vec3::{self, Point3, Vec3};
 
+pub enum Hit {
+    Hit,
+    Record(HitRecord)
+}
 #[derive(Clone)]
 pub struct HitRecord {
     pub p: Point3,
@@ -30,7 +34,7 @@ impl HitRecord {
 }
 
 pub trait Hittable: Send + Sync {
-    fn hit(&self, ray: &Ray, ray_t: Interval) -> Option<HitRecord>;
+    fn hit(&self, ray: &Ray, ray_t: Interval) -> Option<Hit>;
 
     fn bounding_box(&self) -> AABB;
 }
