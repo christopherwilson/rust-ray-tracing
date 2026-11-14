@@ -11,7 +11,8 @@ mod vec3;
 mod aabb;
 mod bvh;
 mod scenes;
+mod texture;
 
 fn main() {
-    scenes::moving_cover_bvh();
+    scenes::checker_sphere_floor();
 }

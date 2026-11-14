@@ -1,6 +1,6 @@
 use rand::random;
 
-use crate::{colour::Colour, hittable::HitRecord, ray::Ray, vec3::{self, Vec3}};
+use crate::{colour::Colour, hittable::HitRecord, ray::Ray, texture::Texture, vec3::{self, Vec3}};
 
 pub struct ScatterRecord {
     pub attenuation: Colour,
@@ -12,12 +12,12 @@ pub trait Material: Send + Sync {
 }
 
 pub struct Lambertian {
-    albedo: Colour,
+    texture: Box<dyn Texture>,
 }
 
 impl Lambertian {
-    pub fn new(albedo: Colour) -> Lambertian {
-        Lambertian { albedo }
+    pub fn new(texture: Box<dyn Texture>) -> Lambertian {
+        Lambertian { texture }
     }
 }
 
@@ -31,7 +31,7 @@ impl Material for Lambertian {
         };
 
         Some(ScatterRecord { 
-            attenuation: self.albedo, 
+            attenuation: self.texture.value(rec.u, rec.v, &rec.p), 
             scattered: Ray::new(rec.p, scatter_direction, r_in.time()),
         })
     }

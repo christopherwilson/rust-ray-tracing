@@ -60,6 +60,8 @@ impl Hittable for Sphere {
             p: ray.at(root),
             material: self.material.clone(),
             normal: Default::default(),
+            u: 0.0,
+            v: 0.0,
             front_face: Default::default(),
         };
         let outward_normal = (rec.p - current_centre) / self.radius;
