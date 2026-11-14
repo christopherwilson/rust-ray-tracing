@@ -2,9 +2,9 @@ use std::{cmp::Ordering, sync::Arc};
 
 use rand::{random, random_range};
 
-use crate::{aabb::AABB, hittable::{Hit, Hittable}, interval::Interval, ray::Ray};
+use crate::{aabb::AABB, hittable::{HitRecord, Hittable}, interval::Interval, ray::Ray};
 
-struct BVHNode {
+pub struct BVHNode {
     left: Arc<dyn Hittable>,
     right: Arc<dyn Hittable>,
     bbox: AABB,
@@ -32,13 +32,13 @@ impl BVHNode {
             right = objects[0].clone();
         } else if object_span == 2 {
             left = objects[0].clone();
-            right = objects[object_span].clone();
+            right = objects[object_span - 1].clone();
         } else {
             objects.sort_by(compare);
 
             let mid = 0 + object_span / 2;
-            left = Arc::new(BVHNode::new(objects[0..mid].to_vec()));
-            right = Arc::new(BVHNode::new(objects[mid..object_span].to_vec()));
+            left = Arc::new(BVHNode::new(objects[..mid].to_vec()));
+            right = Arc::new(BVHNode::new(objects[mid..].to_vec()));
         }
 
         let bbox = AABB::combine(&left.bounding_box(), &right.bounding_box());
@@ -47,17 +47,21 @@ impl BVHNode {
 }
 
 impl Hittable for BVHNode {
-    fn hit(&self, ray: &Ray, ray_t: Interval) -> Option<Hit> {
+    fn hit(&self, ray: &Ray, ray_t: Interval) -> Option<HitRecord> {
         if !self.bbox.hit(ray, &ray_t) {
             return None
         }
 
-        if let Some(Hit::Hit) = self.left.hit(ray, ray_t) {
-            return Some(Hit::Hit);
+        if let Some(record) = self.left.hit(ray, ray_t) {
+            // need to check if there is a closer hit on the right
+            if let Some(record) = self.right.hit(ray, Interval::new(ray_t.min, record.t)) {
+                return Some(record);
+            }
+            return Some(record);
         }
 
-        if let Some(Hit::Hit) = self.right.hit(ray, ray_t) {
-            return Some(Hit::Hit);
+        if let Some(record) = self.right.hit(ray, ray_t) {
+            return Some(record);
         }
 
         None

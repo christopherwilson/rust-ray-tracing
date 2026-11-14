@@ -9,13 +9,13 @@ mod ray;
 mod sphere;
 mod vec3;
 mod aabb;
+mod bvh;
 
 use std::sync::Arc;
 
 use camera::Camera;
 use camera::CameraParams;
 use colour::Colour;
-use hittable_list::HittableList;
 use material::Dielectric;
 use material::Lambertian;
 use material::Metal;
@@ -24,14 +24,16 @@ use rand::random_range;
 use sphere::Sphere;
 use vec3::Point3;
 use vec3::Vec3;
+use hittable::Hittable;
+use bvh::BVHNode;
 
 fn main() {
     // World
 
-    let mut world = HittableList::new();
+    let mut world: Vec<Arc<dyn Hittable>> = Vec::new();
 
     let ground_material = Arc::new(Lambertian::new(Colour::new(0.5, 0.5, 0.5)));
-    world.add(Box::new(Sphere::new(
+    world.push(Arc::new(Sphere::new(
         Point3::new(0.0, -1000.0, 0.0),
         None,
         1000.0,
@@ -65,13 +67,13 @@ fn main() {
                     let material = Arc::new(Dielectric::new(1.5));
                     Sphere::new(centre, None, 0.2, material)
                 };
-                world.add(Box::new(sphere));
+                world.push(Arc::new(sphere));
             }
         }
     }
 
     let material1 = Arc::new(Dielectric::new(1.5));
-    world.add(Box::new(Sphere::new(
+    world.push(Arc::new(Sphere::new(
         Point3::new(0.0, 1.0, 0.0),
         None,
         1.0,
@@ -79,7 +81,7 @@ fn main() {
     )));
 
     let material2 = Arc::new(Lambertian::new(Colour::new(0.4, 0.2, 0.1)));
-    world.add(Box::new(Sphere::new(
+    world.push(Arc::new(Sphere::new(
         Point3::new(-4.0, 1.0, 0.0),
         None,
         1.0,
@@ -87,18 +89,20 @@ fn main() {
     )));
 
     let material3 = Arc::new(Metal::new(Colour::new(0.7, 0.6, 0.5), 0.0));
-    world.add(Box::new(Sphere::new(
+    world.push(Arc::new(Sphere::new(
         Point3::new(4.0, 1.0, 0.0),
         None,
         1.0,
         material3,
     )));
 
+    let world = BVHNode::new(world);
+
     // Camera
     let cam_params = CameraParams {
         aspect_ratio: 16.0 / 9.0,
-        image_width: 400,
-        samples_per_pixel: 100,
+        image_width: 1200,
+        samples_per_pixel: 500,
         max_depth: 50,
 
         vfov: 20.0,
