@@ -1,20 +1,22 @@
-use std::{cmp::Ordering, sync::Arc};
+use std::sync::Arc;
 
-use rand::{random, random_range};
-
-use crate::{aabb::AABB, hittable::{HitRecord, Hittable}, interval::Interval, ray::Ray};
+use crate::{aabb::Aabb, hittable::{HitRecord, Hittable}, interval::Interval, ray::Ray};
 
 pub struct BVHNode {
     left: Arc<dyn Hittable>,
     right: Arc<dyn Hittable>,
-    bbox: AABB,
+    bbox: Aabb,
 }
 
 impl BVHNode {
     pub fn new(objects: Vec<Arc<dyn Hittable>>) -> Self {
-        let axis: usize = random_range(0..=2);
+        let mut bbox = Aabb::default();
 
-        let mut objects = objects;
+        for object in &objects {
+            bbox = Aabb::combine(&bbox, &object.bounding_box());
+        }
+
+        let axis = bbox.longest_axis();
 
         let compare = |a: &Arc<dyn Hittable>, b: &Arc<dyn Hittable>| {
             let a_axis_interval = a.bounding_box().axis_interval(axis as u32);
@@ -22,26 +24,28 @@ impl BVHNode {
             a_axis_interval.min.partial_cmp(&b_axis_interval.min).unwrap()
         };
 
-        let object_span = objects.len();
+        let num_objects = objects.len();
+
+        let mut objects = objects;
 
         let left: Arc<dyn Hittable>;
         let right: Arc<dyn Hittable>;
 
-        if object_span == 1 {
+        if num_objects == 1 {
             left = objects[0].clone();
             right = objects[0].clone();
-        } else if object_span == 2 {
+        } else if num_objects == 2 {
             left = objects[0].clone();
-            right = objects[object_span - 1].clone();
+            right = objects[num_objects - 1].clone();
         } else {
             objects.sort_by(compare);
 
-            let mid = 0 + object_span / 2;
+            let mid = num_objects / 2;
             left = Arc::new(BVHNode::new(objects[..mid].to_vec()));
             right = Arc::new(BVHNode::new(objects[mid..].to_vec()));
         }
 
-        let bbox = AABB::combine(&left.bounding_box(), &right.bounding_box());
+        let bbox = Aabb::combine(&left.bounding_box(), &right.bounding_box());
         BVHNode { left, right, bbox }
     }
 }
@@ -67,7 +71,7 @@ impl Hittable for BVHNode {
         None
     } 
 
-    fn bounding_box(&self) -> AABB {
+    fn bounding_box(&self) -> Aabb {
         self.bbox
     }
 }

@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use crate::aabb::AABB;
+use crate::aabb::Aabb;
 use crate::hittable::{HitRecord, Hittable};
 use crate::interval::Interval;
 use crate::material::Material;
@@ -11,7 +11,7 @@ pub struct Sphere {
     centre: Ray,
     radius: f64,
     material: Arc<dyn Material>,
-    bbox: AABB,
+    bbox: Aabb,
 }
 
 impl Sphere {
@@ -19,12 +19,12 @@ impl Sphere {
         let rvec = Vec3::pure_diagonal(radius);
         let (centre, bbox) = if let Some(end_centre) = end_centre {
             let centre = Ray::new(centre, end_centre - centre, 0.0);
-            let box0 = AABB::from_point3s(centre.at(0.0) - rvec, centre.at(0.0) + rvec);
-            let box1 = AABB::from_point3s(centre.at(1.0) - rvec, centre.at(1.0) + rvec);
-            let bbox = AABB::combine(&box0, &box1);
+            let box0 = Aabb::from_point3s(centre.at(0.0) - rvec, centre.at(0.0) + rvec);
+            let box1 = Aabb::from_point3s(centre.at(1.0) - rvec, centre.at(1.0) + rvec);
+            let bbox = Aabb::combine(&box0, &box1);
             (centre, bbox)
         } else {
-            let bbox = AABB::from_point3s(centre - rvec, centre + rvec);
+            let bbox = Aabb::from_point3s(centre - rvec, centre + rvec);
             (Ray::new(centre, Vec3::zero(), 0.0), bbox)
         };
         Sphere { centre, radius, material, bbox }
@@ -67,7 +67,7 @@ impl Hittable for Sphere {
         Some(rec)
     }
 
-    fn bounding_box(&self) -> AABB {
+    fn bounding_box(&self) -> Aabb {
         self.bbox
     }
 }
