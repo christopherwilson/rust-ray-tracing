@@ -3,6 +3,7 @@ use std::sync::Arc;
 use crate::camera::Camera;
 use crate::camera::CameraParams;
 use crate::colour::Colour;
+use crate::hittable_list::HittableList;
 use crate::material::Dielectric;
 use crate::material::Lambertian;
 use crate::material::Metal;
@@ -90,8 +91,8 @@ pub fn moving_cover_bvh() {
     // Camera
     let cam_params = CameraParams {
         aspect_ratio: 16.0 / 9.0,
-        image_width: 1200,
-        samples_per_pixel: 500,
+        image_width: 400,
+        samples_per_pixel: 100,
         max_depth: 50,
 
         vfov: 20.0,
@@ -198,4 +199,43 @@ pub fn checker_sphere_floor() {
     let camera = Camera::new(cam_params);
 
     camera.render(&world);
+}
+
+pub fn checkered_spheres() {
+    let mut world = HittableList::new();
+
+    let checker = Arc::new(Lambertian::new(Box::new(CheckerTexture::from_colours(0.32, Colour::new(0.2, 0.3, 0.1), Colour::new(0.9, 0.9, 0.9)))));
+
+    world.add(Box::new(Sphere::new(
+        Point3::new(0.0, -10.0, 0.0), 
+        None, 
+        10.0, 
+        checker.clone()
+    )));
+
+    world.add(Box::new(Sphere::new(
+        Point3::new(0.0, 10.0, 0.0), 
+        None, 
+        10.0, 
+        checker.clone()
+    )));
+
+    let camera_params = CameraParams { 
+        aspect_ratio: 16.0 / 9.0, 
+        image_width: 400, 
+        samples_per_pixel: 100, 
+        max_depth: 50, 
+
+        vfov: 20.0, 
+        lookfrom: Point3::new(13.0, 2.0, 3.0), 
+        lookat: Point3::zero(), 
+        vup: Point3::new(0.0, 1.0, 0.0), 
+
+        defocus_angle: 0.0, 
+
+        focus_dist: 10.0 
+    };
+
+    let cam = Camera::new(camera_params);
+    cam.render(&world);
 }
