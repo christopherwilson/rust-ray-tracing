@@ -66,19 +66,22 @@ impl Hittable for Sphere {
             }
         }
 
-        let (u, v) = Sphere::get_sphere_uv(ray.at(root));
-
         let mut rec = HitRecord {
             t: root,
             p: ray.at(root),
             material: self.material.clone(),
             normal: Default::default(),
-            u,
-            v,
+            u: 0.0,
+            v: 0.0,
             front_face: Default::default(),
         };
         let outward_normal = (rec.p - current_centre) / self.radius;
         rec.set_face_normal(ray, outward_normal);
+
+        let (u, v) = Sphere::get_sphere_uv(outward_normal);
+        rec.u = u;
+        rec.v = v;
+
         Some(rec)
     }
 

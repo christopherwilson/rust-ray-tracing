@@ -8,6 +8,7 @@ use crate::material::Dielectric;
 use crate::material::Lambertian;
 use crate::material::Metal;
 use crate::texture::CheckerTexture;
+use crate::texture::ImageTexture;
 use crate::texture::SolidColour;
 use rand::random;
 use rand::random_range;
@@ -238,4 +239,31 @@ pub fn checkered_spheres() {
 
     let cam = Camera::new(camera_params);
     cam.render(&world);
+}
+
+pub fn earth() {
+    let earth_texture = ImageTexture::new("image-textures/earthmap.jpg");
+    let earth_material = Lambertian::new(Box::new(earth_texture));
+    let globe = Sphere::new(Point3::zero(), None, 2.0, Arc::new(earth_material));
+
+    let mut world = HittableList::new();
+    world.add(Box::new(globe));
+
+    let camera_params: CameraParams = CameraParams { 
+        aspect_ratio: 16.0 / 9.0, 
+        image_width: 400, 
+        samples_per_pixel: 100, 
+        max_depth: 50, 
+
+        vfov: 20.0,
+        lookfrom: Point3::new(0.0, 0.0, 12.0), 
+        lookat: Point3::zero(), 
+        vup: Point3::new(0.0, 1.0, 0.0), 
+        defocus_angle: 0.0, 
+        focus_dist: 10.0 
+    };
+
+    let camera = Camera::new(camera_params);
+
+    camera.render(&world);
 }

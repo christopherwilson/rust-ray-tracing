@@ -14,5 +14,5 @@ mod scenes;
 mod texture;
 
 fn main() {
-    scenes::checkered_spheres();
+    scenes::earth();
 }
