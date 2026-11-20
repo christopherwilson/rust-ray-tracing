@@ -175,12 +175,26 @@ impl Perlin {
         }
         accum
     }
+
+    pub fn turbulence(&self, p: &Point3, depth: u32) -> f64 {
+        let mut accum = 0.0;
+        let mut temp_p = p.clone();
+        let mut weight = 1.0;
+
+        for _ in 0..depth {
+            accum += weight * self.noise(&temp_p);
+            weight *= 0.5;
+            temp_p *= 2.0;
+        }
+
+        accum.abs()
+    }
 }
 
 impl Texture for Perlin {
     fn value(&self, _u: f64, _v: f64, p: &Point3) -> Colour {
         let p = self.scale * *p;
-        Colour::pure_diagonal(1.0) * 0.5 * (1.0 + self.noise(&p))
+        Colour::pure_diagonal(0.5) * (1.0 + f64::sin(self.scale * p.z() + 10.0 * self.turbulence(&p, 7)))
     }
 }
 
