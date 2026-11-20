@@ -4,6 +4,7 @@ use jpeg_decoder::{Decoder, ImageInfo};
 use rand::{random, random_range};
 use rand::seq::SliceRandom;
 
+use crate::vec3::{self, Vec3};
 use crate::{colour::Colour, interval::Interval, vec3::Point3};
 
 pub trait Texture: Send + Sync {
@@ -107,7 +108,7 @@ impl Texture for ImageTexture {
 }
 
 pub struct Perlin {
-    rand_float: [f64; Perlin::POINT_COUNT],
+    rand_vec: [Vec3; Perlin::POINT_COUNT],
     perm_x: [usize; Self::POINT_COUNT],
     perm_y: [usize; Self::POINT_COUNT],
     perm_z: [usize; Self::POINT_COUNT],
@@ -118,12 +119,12 @@ impl Perlin {
     const POINT_COUNT: usize = 256;
 
     pub fn new(scale: f64) -> Self {
-        let rand_float: [f64; Self::POINT_COUNT] = array::from_fn(|_| random());
+        let rand_vec: [Vec3; Self::POINT_COUNT] = array::from_fn(|_| vec3::unit_vector(Vec3::random_range(-1.0, 1.0)));
         let perm_x = Self::generate_perm();
         let perm_y = Self::generate_perm();
         let perm_z = Self::generate_perm();
         
-        Perlin { rand_float, perm_x, perm_y, perm_z, scale }
+        Perlin { rand_vec, perm_x, perm_y, perm_z, scale }
     }
 
     fn generate_perm() -> [usize; Self::POINT_COUNT] { 
@@ -137,15 +138,12 @@ impl Perlin {
         let u = p.x() - p.x().floor();
         let v = p.y() - p.y().floor();
         let w = p.z() - p.z().floor();
-        let u = u * u * (3.0 - 2.0 * u);
-        let v = v * v * (3.0 - 2.0 * v);
-        let w = w * w * (3.0 - 2.0 * w);
 
         let i = p.x().floor() as isize;
         let j = p.y().floor() as isize;
         let k = p.z().floor() as isize;
-        let c: [[[f64; 3]; 3]; 3] = array::from_fn(|di| array::from_fn(|dj| array::from_fn(|dk|
-            self.rand_float[
+        let c: [[[Vec3; 3]; 3]; 3] = array::from_fn(|di| array::from_fn(|dj| array::from_fn(|dk|
+            self.rand_vec[
                 self.perm_x[((i + di as isize) & 255) as usize] ^
                 self.perm_y[((j + dj as isize) & 255) as usize] ^
                 self.perm_z[((k + dk as isize) & 255) as usize]
@@ -155,18 +153,23 @@ impl Perlin {
         self.trilinear_interp(c, u, v, w)
     }
 
-    fn trilinear_interp(&self, c: [[[f64; 3]; 3]; 3], u: f64, v: f64, w: f64) -> f64 {
+    fn trilinear_interp(&self, c: [[[Vec3; 3]; 3]; 3], u: f64, v: f64, w: f64) -> f64 {
+        let uu = u * u * (3.0 - 2.0 * u);
+        let vv = v * v * (3.0 - 2.0 * v);
+        let ww = w * w * (3.0 - 2.0 * w);
         let mut accum = 0.0;
+
         for i in 0..2 {
             for j in 0..2 {
                 for k in 0..2 {
                     let i = i as f64;
                     let j = j as f64;
                     let k = k as f64;
-                    accum += (i * u + (1.0 - i) * (1.0 - u))
-                        * (j * v + (1.0 - j) * (1.0 - v))
-                        * (k * w + (1.0 - k) * (1.0 - w))
-                        * c[i as usize][j as usize][k as usize];
+                    let weight_v = Vec3::new(u - i, v - j, w - k);
+                    accum += (i * uu + (1.0 - i) * (1.0 - uu))
+                        * (j * vv + (1.0 - j) * (1.0 - vv))
+                        * (k * ww + (1.0 - k) * (1.0 - ww))
+                        * vec3::dot(&c[i as usize][j as usize][k as usize], &weight_v);
                 }
             }
         }
@@ -177,7 +180,7 @@ impl Perlin {
 impl Texture for Perlin {
     fn value(&self, _u: f64, _v: f64, p: &Point3) -> Colour {
         let p = self.scale * *p;
-        Colour::pure_diagonal(1.0) * self.noise(&p)
+        Colour::pure_diagonal(1.0) * 0.5 * (1.0 + self.noise(&p))
     }
 }
 
