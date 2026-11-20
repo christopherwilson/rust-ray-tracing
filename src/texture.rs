@@ -1,7 +1,6 @@
 use std::{array, fs::File, io::BufReader};
 
 use jpeg_decoder::{Decoder, ImageInfo};
-use rand::{random, random_range};
 use rand::seq::SliceRandom;
 
 use crate::vec3::{self, Vec3};
@@ -88,12 +87,12 @@ impl ImageTexture {
 impl Texture for ImageTexture {
     fn value(&self, u: f64, v: f64, _p: &Point3) -> Colour {
         // If we have no texture data, then return solid cyan as a debugging aid.
-        if self.height <= 0 {
+        if self.height == 0 {
             return Colour::new(0.0, 1.0, 1.0);
         }
 
-        let u = Interval::new(0.0, 1.0).clamp(u as f64);
-        let v = 1.0 - Interval::new(0.0, 1.0).clamp(v as f64);
+        let u = Interval::new(0.0, 1.0).clamp(u);
+        let v = 1.0 - Interval::new(0.0, 1.0).clamp(v);
 
         let x = (u * self.width as f64) as u32;
         let y = (v * self.height as f64) as u32;
@@ -178,7 +177,7 @@ impl Perlin {
 
     pub fn turbulence(&self, p: &Point3, depth: u32) -> f64 {
         let mut accum = 0.0;
-        let mut temp_p = p.clone();
+        let mut temp_p = *p;
         let mut weight = 1.0;
 
         for _ in 0..depth {
