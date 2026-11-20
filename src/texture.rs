@@ -111,18 +111,19 @@ pub struct Perlin {
     perm_x: [usize; Self::POINT_COUNT],
     perm_y: [usize; Self::POINT_COUNT],
     perm_z: [usize; Self::POINT_COUNT],
+    scale: f64,
 }
 
 impl Perlin {
     const POINT_COUNT: usize = 256;
 
-    pub fn new() -> Self {
+    pub fn new(scale: f64) -> Self {
         let rand_float: [f64; Self::POINT_COUNT] = array::from_fn(|_| random());
         let perm_x = Self::generate_perm();
         let perm_y = Self::generate_perm();
         let perm_z = Self::generate_perm();
         
-        Perlin { rand_float, perm_x, perm_y, perm_z }
+        Perlin { rand_float, perm_x, perm_y, perm_z, scale }
     }
 
     fn generate_perm() -> [usize; Self::POINT_COUNT] { 
@@ -146,8 +147,8 @@ impl Perlin {
         let c: [[[f64; 3]; 3]; 3] = array::from_fn(|di| array::from_fn(|dj| array::from_fn(|dk|
             self.rand_float[
                 self.perm_x[((i + di as isize) & 255) as usize] ^
-                self.perm_x[((j + dj as isize) & 255) as usize] ^
-                self.perm_x[((k + dk as isize) & 255) as usize]
+                self.perm_y[((j + dj as isize) & 255) as usize] ^
+                self.perm_z[((k + dk as isize) & 255) as usize]
             ]
         )));
 
@@ -175,7 +176,8 @@ impl Perlin {
 
 impl Texture for Perlin {
     fn value(&self, _u: f64, _v: f64, p: &Point3) -> Colour {
-        Colour::pure_diagonal(1.0) * self.noise(p)
+        let p = self.scale * *p;
+        Colour::pure_diagonal(1.0) * self.noise(&p)
     }
 }
 
@@ -196,7 +198,7 @@ mod tests {
 
     #[test]
     fn perlin() {
-        let perlin = Perlin::new();
+        let perlin = Perlin::new(4.0);
 
         assert_ne!(perlin.perm_x, perlin.perm_y)
     }

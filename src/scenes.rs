@@ -272,7 +272,7 @@ pub fn earth() {
 pub fn perlin_spheres() {
     let mut world = HittableList::new();
 
-    let permat = Arc::new(Lambertian::new(Box::new(Perlin::new())));
+    let permat = Arc::new(Lambertian::new(Box::new(Perlin::new(4.0))));
     world.add(Box::new(Sphere::new(
         Point3::new(0.0, -1000.0, 0.0), 
         None, 
