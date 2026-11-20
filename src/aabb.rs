@@ -1,5 +1,6 @@
 use crate::{interval::Interval, ray::Ray, vec3::Point3};
 
+const DELTA: f64 = 0.0001;
 #[derive(Default, Clone, Copy)]
 pub struct Aabb {
     pub x: Interval,
@@ -9,14 +10,17 @@ pub struct Aabb {
 
 impl Aabb {
     pub fn from_intervals(x: Interval, y: Interval, z: Interval) -> Self {
+        let x = x.pad_to_minimus(DELTA);
+        let y = y.pad_to_minimus(DELTA);
+        let z = z.pad_to_minimus(DELTA);
         Aabb { x, y, z }
     }
 
     pub fn from_point3s(a: Point3, b: Point3) -> Self {
         Aabb {
-            x: Interval::new(f64::min(a.x(), b.x()), f64::max(a.x(), b.x())),
-            y: Interval::new(f64::min(a.y(), b.y()), f64::max(a.y(), b.y())),
-            z: Interval::new(f64::min(a.z(), b.z()), f64::max(a.z(), b.z())),
+            x: Interval::new(f64::min(a.x(), b.x()), f64::max(a.x(), b.x())).pad_to_minimus(DELTA),
+            y: Interval::new(f64::min(a.y(), b.y()), f64::max(a.y(), b.y())).pad_to_minimus(DELTA),
+            z: Interval::new(f64::min(a.z(), b.z()), f64::max(a.z(), b.z())).pad_to_minimus(DELTA),
         }
     }
 

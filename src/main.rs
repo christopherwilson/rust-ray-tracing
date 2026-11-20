@@ -12,7 +12,8 @@ mod aabb;
 mod bvh;
 mod scenes;
 mod texture;
+mod quad;
 
 fn main() {
-    scenes::perlin_spheres();
+    scenes::quads();
 }

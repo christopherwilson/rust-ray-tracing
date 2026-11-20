@@ -7,6 +7,7 @@ use crate::hittable_list::HittableList;
 use crate::material::Dielectric;
 use crate::material::Lambertian;
 use crate::material::Metal;
+use crate::quad::Quad;
 use crate::texture::CheckerTexture;
 use crate::texture::ImageTexture;
 use crate::texture::Perlin;
@@ -295,6 +296,67 @@ pub fn perlin_spheres() {
 
         vfov: 20.0,
         lookfrom: Point3::new(13.0, 2.0, 3.0), 
+        lookat: Point3::zero(), 
+        vup: Point3::new(0.0, 1.0, 0.0), 
+        defocus_angle: 0.0, 
+        focus_dist: 10.0 
+    };
+
+    let camera = Camera::new(camera_params);
+
+    camera.render(&world);
+}
+
+pub fn quads() {
+    let mut world = HittableList::new();
+
+    // Materials
+    let left_red = Arc::new(Lambertian::new(Box::new(SolidColour::new(Colour::new(1.0, 0.2, 0.2)))));
+    let back_green = Arc::new(Lambertian::new(Box::new(SolidColour::new(Colour::new(0.2, 1.0, 0.2)))));
+    let right_blue = Arc::new(Lambertian::new(Box::new(SolidColour::new(Colour::new(0.2, 0.2, 1.0)))));
+    let upper_orange = Arc::new(Lambertian::new(Box::new(SolidColour::new(Colour::new(1.0, 0.5, 0.0)))));
+    let lower_teal = Arc::new(Lambertian::new(Box::new(SolidColour::new(Colour::new(0.2, 0.8, 0.8)))));
+
+    // Quads
+    world.add(Box::new(Quad::new(
+        Point3::new(-3.0, -2.0, 5.0), 
+        Vec3::new(0.0, 0.0, -4.0), 
+        Vec3::new(0.0, 4.0, 0.0), 
+        left_red
+    )));
+    world.add(Box::new(Quad::new(
+        Point3::new(-2.0, -2.0, 0.0), 
+        Vec3::new(4.0, 0.0, 0.0), 
+        Vec3::new(0.0, 4.0, 0.0), 
+        back_green
+    )));
+    world.add(Box::new(Quad::new(
+        Point3::new(3.0, -2.0, 1.0), 
+        Vec3::new(0.0, 0.0, 4.0), 
+        Vec3::new(0.0, 4.0, 0.0), 
+        right_blue
+    )));
+    world.add(Box::new(Quad::new(
+        Point3::new(-2.0, 3.0, 1.0), 
+        Vec3::new(4.0, 0.0, 0.0), 
+        Vec3::new(0.0, 0.0, 4.0), 
+        upper_orange
+    )));
+    world.add(Box::new(Quad::new(
+        Point3::new(-2.0, -3.0, 5.0), 
+        Vec3::new(4.0, 0.0, 0.0), 
+        Vec3::new(0.0, 0.0, -4.0), 
+        lower_teal
+    )));
+
+    let camera_params: CameraParams = CameraParams { 
+        aspect_ratio: 1.0, 
+        image_width: 400, 
+        samples_per_pixel: 100, 
+        max_depth: 50, 
+
+        vfov: 80.0,
+        lookfrom: Point3::new(0.0, 0.0, 9.0), 
         lookat: Point3::zero(), 
         vup: Point3::new(0.0, 1.0, 0.0), 
         defocus_angle: 0.0, 

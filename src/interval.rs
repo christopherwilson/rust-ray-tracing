@@ -1,5 +1,6 @@
 use crate::common::{fmax, fmin};
 
+
 #[derive(Clone, Copy)]
 pub struct Interval {
     pub min: f64,
@@ -13,6 +14,8 @@ impl Default for Interval {
 }
 
 impl Interval {
+    pub const UNIT_INTERVAL: Interval = Interval { min: 0.0, max: 1.0 };
+
     pub fn new(min: f64, max: f64) -> Self {
         Interval { min, max }
     }
@@ -26,6 +29,14 @@ impl Interval {
     pub fn expand(self, delta: f64) -> Self {
         let padding = delta / 2.0;
         Interval { min: self.min - padding, max: self.max + padding }
+    }
+
+    pub fn pad_to_minimus(self, delta: f64) -> Self {
+        if self.size() < delta {
+            self.expand(delta)
+        } else {
+            self
+        }
     }
 
     #[allow(dead_code)]
