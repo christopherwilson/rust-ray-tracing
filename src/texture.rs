@@ -1,6 +1,8 @@
-use std::{fs::File, io::BufReader};
+use std::{array, fs::File, io::BufReader};
 
 use jpeg_decoder::{Decoder, ImageInfo};
+use rand::{random, random_range};
+use rand::seq::SliceRandom;
 
 use crate::{colour::Colour, interval::Interval, vec3::Point3};
 
@@ -104,6 +106,46 @@ impl Texture for ImageTexture {
     }
 }
 
+pub struct Perlin {
+    rand_float: [f64; Perlin::POINT_COUNT],
+    perm_x: [usize; Self::POINT_COUNT],
+    perm_y: [usize; Self::POINT_COUNT],
+    perm_z: [usize; Self::POINT_COUNT],
+}
+
+impl Perlin {
+    const POINT_COUNT: usize = 256;
+
+    pub fn new() -> Self {
+        let rand_float: [f64; Self::POINT_COUNT] = array::from_fn(|_| random());
+        let perm_x = Self::generate_perm();
+        let perm_y = Self::generate_perm();
+        let perm_z = Self::generate_perm();
+        
+        Perlin { rand_float, perm_x, perm_y, perm_z }
+    }
+
+    fn generate_perm() -> [usize; Self::POINT_COUNT] { 
+        let mut p: [usize; Self::POINT_COUNT] = array::from_fn(|i| i);
+        let mut rng = rand::rng();
+        p.shuffle(&mut rng);
+        p
+    }
+
+    pub fn noise(&self, p: &Point3) -> f64 {
+        let i = ((4.0 * p.x()) as isize & 255) as usize;
+        let j = ((4.0 * p.y()) as isize & 255) as usize;
+        let k = ((4.0 * p.z()) as isize & 255) as usize;
+
+        self.rand_float[self.perm_x[i] ^ self.perm_y[j] ^ self.perm_z[k]]
+    }
+}
+
+impl Texture for Perlin {
+    fn value(&self, _u: f64, _v: f64, p: &Point3) -> Colour {
+        Colour::pure_diagonal(1.0) * self.noise(p)
+    }
+}
 
 #[cfg(test)]
 mod tests {
@@ -118,5 +160,12 @@ mod tests {
             height: 1,
         };
         assert_eq!(image_texture, expected)
+    }
+
+    #[test]
+    fn perlin() {
+        let perlin = Perlin::new();
+
+        assert_ne!(perlin.perm_x, perlin.perm_y)
     }
 }

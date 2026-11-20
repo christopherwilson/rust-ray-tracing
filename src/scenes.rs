@@ -9,6 +9,7 @@ use crate::material::Lambertian;
 use crate::material::Metal;
 use crate::texture::CheckerTexture;
 use crate::texture::ImageTexture;
+use crate::texture::Perlin;
 use crate::texture::SolidColour;
 use rand::random;
 use rand::random_range;
@@ -257,6 +258,43 @@ pub fn earth() {
 
         vfov: 20.0,
         lookfrom: Point3::new(0.0, 0.0, 12.0), 
+        lookat: Point3::zero(), 
+        vup: Point3::new(0.0, 1.0, 0.0), 
+        defocus_angle: 0.0, 
+        focus_dist: 10.0 
+    };
+
+    let camera = Camera::new(camera_params);
+
+    camera.render(&world);
+}
+
+pub fn perlin_spheres() {
+    let mut world = HittableList::new();
+
+    let permat = Arc::new(Lambertian::new(Box::new(Perlin::new())));
+    world.add(Box::new(Sphere::new(
+        Point3::new(0.0, -1000.0, 0.0), 
+        None, 
+        1000.0, 
+        permat.clone()
+    )));
+
+    world.add(Box::new(Sphere::new(
+        Point3::new(0.0, 2.0, 0.0), 
+        None, 
+        2.0, 
+        permat
+    )));
+
+    let camera_params: CameraParams = CameraParams { 
+        aspect_ratio: 16.0 / 9.0, 
+        image_width: 400, 
+        samples_per_pixel: 100, 
+        max_depth: 50, 
+
+        vfov: 20.0,
+        lookfrom: Point3::new(13.0, 2.0, 3.0), 
         lookat: Point3::zero(), 
         vup: Point3::new(0.0, 1.0, 0.0), 
         defocus_angle: 0.0, 

@@ -14,5 +14,5 @@ mod scenes;
 mod texture;
 
 fn main() {
-    scenes::earth();
+    scenes::perlin_spheres();
 }
