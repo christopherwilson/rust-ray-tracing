@@ -136,11 +136,14 @@ impl Perlin {
         let u = p.x() - p.x().floor();
         let v = p.y() - p.y().floor();
         let w = p.z() - p.z().floor();
+        let u = u * u * (3.0 - 2.0 * u);
+        let v = v * v * (3.0 - 2.0 * v);
+        let w = w * w * (3.0 - 2.0 * w);
 
         let i = p.x().floor() as isize;
         let j = p.y().floor() as isize;
         let k = p.z().floor() as isize;
-        let mut c: [[[f64; 3]; 3]; 3] = array::from_fn(|di| array::from_fn(|dj| array::from_fn(|dk|
+        let c: [[[f64; 3]; 3]; 3] = array::from_fn(|di| array::from_fn(|dj| array::from_fn(|dk|
             self.rand_float[
                 self.perm_x[((i + di as isize) & 255) as usize] ^
                 self.perm_x[((j + dj as isize) & 255) as usize] ^
