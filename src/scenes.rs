@@ -433,3 +433,76 @@ pub fn simple_light() {
 
     camera.render(&world);
 }
+
+pub fn cornell_box() {
+    let mut objects: Vec<Arc<dyn Hittable>> = Vec::new();
+
+    let red = Arc::new(Lambertian::from_rgb(0.65, 0.05, 0.05));
+    let white = Arc::new(Lambertian::from_rgb(0.73, 0.73, 0.73));
+    let green = Arc::new(Lambertian::from_rgb(0.12, 0.45, 0.15));
+    let light = Arc::new(DiffuseLight::from_colour(Colour::pure_diagonal(15.0)));
+
+    objects.push(Arc::new(Quad::new(
+        Point3::new(555.0, 0.0, 0.0),
+        Vec3::new(0.0, 555.0, 0.0),
+        Vec3::new(0.0, 0.0, 555.0),
+        green
+    )));
+
+    objects.push(Arc::new(Quad::new(
+        Point3::new(0.0, 0.0, 0.0),
+        Vec3::new(0.0, 555.0, 0.0),
+        Vec3::new(0.0, 0.0, 555.0),
+        red
+    )));
+
+    objects.push(Arc::new(Quad::new(
+        Point3::new(343.0, 554.0, 332.0),
+        Vec3::new(-130.0, 0.0, 0.0),
+        Vec3::new(0.0, 0.0, -105.),
+        light
+    )));
+
+    objects.push(Arc::new(Quad::new(
+        Point3::new(0.0, 0.0, 0.0),
+        Vec3::new(555.0, 0.0, 0.0),
+        Vec3::new(0.0, 0.0, 555.0),
+        white.clone()
+    )));
+
+    objects.push(Arc::new(Quad::new(
+        Point3::new(555.0, 555.0, 555.0),
+        Vec3::new(-555.0, 0.0, 0.0),
+        Vec3::new(0.0, 0.0, -555.0),
+        white.clone()
+    )));
+
+    objects.push(Arc::new(Quad::new(
+        Point3::new(0.0, 0.0, 555.0),
+        Vec3::new(555.0, 0.0, 0.0),
+        Vec3::new(0.0, 555.0, 0.0),
+        white.clone()
+    )));
+
+    let world = BVHNode::new(objects);
+
+    let cam_params = CameraParams {
+        aspect_ratio: 1.0,
+        image_width: 600,
+        samples_per_pixel: 200,
+        max_depth: 50,
+
+        vfov: 40.0,
+        lookfrom: Point3::new(278., 278., -800.),
+        lookat: Point3::new(278., 278., 0.),
+        vup: Vec3::new(0.0, 1.0, 0.0),
+
+        defocus_angle: 0.0,
+        focus_dist: 10.0,
+        
+        background: Colour::zero(),
+    };
+
+    let camera = Camera::new(cam_params);
+    camera.render(&world);
+}

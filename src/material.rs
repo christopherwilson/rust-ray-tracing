@@ -25,6 +25,14 @@ impl Lambertian {
     pub fn new(texture: Box<dyn Texture>) -> Lambertian {
         Lambertian { texture }
     }
+
+    pub fn from_colour(colour: Colour) -> Self {
+        Lambertian { texture: Box::new(SolidColour::new(colour)) }
+    }
+
+    pub fn from_rgb(r: f64, g: f64, b: f64) -> Self {
+        Lambertian { texture: Box::new(SolidColour::from_rgb(r, g, b)) }
+    }
 }
 
 impl Material for Lambertian {

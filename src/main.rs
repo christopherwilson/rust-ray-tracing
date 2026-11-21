@@ -1,3 +1,5 @@
+mod aabb;
+mod bvh;
 mod camera;
 mod colour;
 mod common;
@@ -5,17 +7,15 @@ mod hittable;
 mod hittable_list;
 mod interval;
 mod material;
-mod ray;
-mod sphere;
-mod vec3;
-mod aabb;
-mod bvh;
-mod scenes;
-mod texture;
 mod quad;
+mod ray;
+mod scenes;
+mod sphere;
+mod texture;
+mod vec3;
 
 fn main() {
-    let scene = 6;
+    let scene = 7;
 
     match scene {
         1 => scenes::moving_cover_bvh(),
@@ -24,7 +24,7 @@ fn main() {
         4 => scenes::perlin_spheres(),
         5 => scenes::quads(),
         6 => scenes::simple_light(),
-        _ => ()
+        7 => scenes::cornell_box(),
+        _ => (),
     }
-    
 }
