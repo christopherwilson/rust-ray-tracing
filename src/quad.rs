@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use crate::{aabb::Aabb, hittable::{HitRecord, Hittable}, interval::{self, Interval}, material::Material, vec3::{self, Point3, Vec3, cross, dot}};
+use crate::{aabb::Aabb, hittable::{HitRecord, Hittable}, interval::Interval, material::Material, vec3::{self, Point3, Vec3, cross, dot}};
 
 pub struct Quad {
     q: Point3,

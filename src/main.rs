@@ -15,5 +15,16 @@ mod texture;
 mod quad;
 
 fn main() {
-    scenes::simple_light();
+    let scene = 6;
+
+    match scene {
+        1 => scenes::moving_cover_bvh(),
+        2 => scenes::checkered_spheres(),
+        3 => scenes::earth(),
+        4 => scenes::perlin_spheres(),
+        5 => scenes::quads(),
+        6 => scenes::simple_light(),
+        _ => ()
+    }
+    
 }
