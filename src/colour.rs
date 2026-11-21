@@ -5,6 +5,12 @@ use crate::{interval::Interval, vec3::Vec3};
 // type alias
 pub type Colour = Vec3;
 
+impl Colour {
+    pub fn sky() -> Colour {
+        Colour::new(0.7, 0.8, 1.0)
+    }
+}
+
 pub fn write_colour(out: &mut impl Write, pixel_colour: Colour) {
     let r = pixel_colour.x();
     let g = pixel_colour.y();

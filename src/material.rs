@@ -1,6 +1,6 @@
 use rand::random;
 
-use crate::{colour::Colour, hittable::HitRecord, ray::Ray, texture::Texture, vec3::{self, Vec3}};
+use crate::{colour::Colour, hittable::HitRecord, ray::Ray, texture::{SolidColour, Texture}, vec3::{self, Point3, Vec3}};
 
 pub struct ScatterRecord {
     pub attenuation: Colour,
@@ -8,7 +8,13 @@ pub struct ScatterRecord {
 }
 
 pub trait Material: Send + Sync {
-    fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<ScatterRecord>;
+    fn scatter(&self, _r_in: &Ray, _rec: &HitRecord) -> Option<ScatterRecord> {
+        None
+    }
+
+    fn emitted(&self, _u: f64, _v: f64, _p: &Point3) -> Colour {
+        Colour::zero()
+    }
 }
 
 pub struct Lambertian {
@@ -100,5 +106,25 @@ impl Material for Dielectric {
         let scattered = Ray::new(rec.p, direction, r_in.time());
 
         Some(ScatterRecord { attenuation, scattered })
+    }
+}
+
+pub struct DiffuseLight {
+    texture: Box<dyn Texture>,
+}
+
+impl DiffuseLight {
+    pub fn new(texture: Box<dyn Texture>) -> Self {
+        DiffuseLight { texture }
+    }
+
+    pub fn from_colour(colour: Colour) -> Self {
+        DiffuseLight { texture: Box::new(SolidColour::new(colour)) }
+    }
+}
+
+impl Material for DiffuseLight {
+    fn emitted(&self, u: f64, v: f64, p: &Point3) -> Colour {
+        self.texture.value(u, v, p)
     }
 }

@@ -15,5 +15,5 @@ mod texture;
 mod quad;
 
 fn main() {
-    scenes::quads();
+    scenes::simple_light();
 }

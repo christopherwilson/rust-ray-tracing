@@ -22,6 +22,8 @@ pub struct CameraParams {
 
     pub defocus_angle: f64,
     pub focus_dist: f64,
+
+    pub background: Colour,
 }
 
 pub struct Camera {
@@ -35,6 +37,7 @@ pub struct Camera {
     defocus_disc_u: Vec3,
     defocus_disc_v: Vec3,
     defocus_angle: f64,
+    background: Colour,
 }
 
 impl Camera {
@@ -51,7 +54,7 @@ impl Camera {
                     let mut pixel_colour = Colour::new(0.0, 0.0, 0.0);
                     for _sample in 0..self.samples_per_pixel {
                         let r = self.get_ray(i as f64, j as f64);
-                        pixel_colour += Camera::ray_colour(&r, self.max_depth, world)
+                        pixel_colour += self.ray_colour(&r, self.max_depth, world)
                     }
                     pixel_colour
                 })
@@ -64,7 +67,7 @@ impl Camera {
         eprint!("\rDone.                 \n");
     }
 
-    pub fn new(CameraParams { aspect_ratio, image_width, samples_per_pixel, max_depth, vfov, lookfrom, lookat, vup, defocus_angle, focus_dist }: CameraParams) -> Camera {
+    pub fn new(CameraParams { aspect_ratio, image_width, samples_per_pixel, max_depth, vfov, lookfrom, lookat, vup, defocus_angle, focus_dist, background }: CameraParams) -> Camera {
         let image_height: u32 = (image_width as f64 / aspect_ratio) as u32;
         
         let center = lookfrom;
@@ -99,25 +102,26 @@ impl Camera {
         let defocus_disc_u = u * defocus_radius;
         let defocus_disc_v = v * defocus_radius;
 
-        Camera { image_width, image_height, center, pixel00_loc, pixel_delta, samples_per_pixel, max_depth, defocus_disc_u, defocus_disc_v, defocus_angle }
+        Camera { image_width, image_height, center, pixel00_loc, pixel_delta, samples_per_pixel, max_depth, defocus_disc_u, defocus_disc_v, defocus_angle, background }
     }
 
-    fn ray_colour(ray: &Ray, depth: u32, world: &dyn Hittable) -> Colour {
+    fn ray_colour(&self, ray: &Ray, depth: u32, world: &dyn Hittable) -> Colour {
         // If we've exceeded ray bounce limit, no more light is gathered
         if depth == 0 {
             return Colour::new(0.0, 0.0, 0.0);
         }
 
         if let Some(rec) = world.hit(ray, Interval::new(0.001, f64::INFINITY)) {
+            let emission_colour = rec.material.emitted(rec.u, rec.v, &rec.p);
             if let Some(ScatterRecord { attenuation, scattered }) = rec.material.scatter(ray, &rec) {
-                return attenuation * Camera::ray_colour(&scattered, depth - 1, world);
+                let scatter_colour = attenuation * self.ray_colour(&scattered, depth - 1, world);
+                emission_colour + scatter_colour
+            } else {
+                emission_colour
             }
-            return Colour::new(0.0, 0.0, 0.0);
+        } else {
+            self.background
         }
-
-        let unit_direction = vec3::unit_vector(ray.direction());
-        let a = 0.5 * (unit_direction.y() + 1.0);
-        (1.0 - a) * Colour::new(1.0, 1.0, 1.0) + a * Colour::new(0.5, 0.7, 1.0)
     }
 
     pub fn get_ray(&self, u: f64, v: f64) -> Ray {
@@ -162,6 +166,8 @@ impl Default for Camera {
 
             defocus_angle: 0.0,
             focus_dist: 10.0,
+
+            background: Colour::new(0.70, 0.80, 1.0),
         };
 
         Camera::new(params)

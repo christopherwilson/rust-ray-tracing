@@ -5,6 +5,7 @@ use crate::camera::CameraParams;
 use crate::colour::Colour;
 use crate::hittable_list::HittableList;
 use crate::material::Dielectric;
+use crate::material::DiffuseLight;
 use crate::material::Lambertian;
 use crate::material::Metal;
 use crate::quad::Quad;
@@ -105,6 +106,8 @@ pub fn moving_cover_bvh() {
 
         defocus_angle: 0.6,
         focus_dist: 10.0,
+        
+        background: Colour::sky(),
     };
 
     let camera = Camera::new(cam_params);
@@ -197,6 +200,8 @@ pub fn checker_sphere_floor() {
 
         defocus_angle: 0.6,
         focus_dist: 10.0,
+
+        background: Colour::sky(),
     };
 
     let camera = Camera::new(cam_params);
@@ -236,7 +241,9 @@ pub fn checkered_spheres() {
 
         defocus_angle: 0.0, 
 
-        focus_dist: 10.0 
+        focus_dist: 10.0,
+
+        background: Colour::sky(),
     };
 
     let cam = Camera::new(camera_params);
@@ -262,7 +269,9 @@ pub fn earth() {
         lookat: Point3::zero(), 
         vup: Point3::new(0.0, 1.0, 0.0), 
         defocus_angle: 0.0, 
-        focus_dist: 10.0 
+        focus_dist: 10.0, 
+
+        background: Colour::sky(),
     };
 
     let camera = Camera::new(camera_params);
@@ -299,7 +308,9 @@ pub fn perlin_spheres() {
         lookat: Point3::zero(), 
         vup: Point3::new(0.0, 1.0, 0.0), 
         defocus_angle: 0.0, 
-        focus_dist: 10.0 
+        focus_dist: 10.0, 
+
+        background: Colour::sky(),
     };
 
     let camera = Camera::new(camera_params);
@@ -360,7 +371,62 @@ pub fn quads() {
         lookat: Point3::zero(), 
         vup: Point3::new(0.0, 1.0, 0.0), 
         defocus_angle: 0.0, 
-        focus_dist: 10.0 
+        focus_dist: 10.0, 
+
+        background: Colour::sky(),
+    };
+
+    let camera = Camera::new(camera_params);
+
+    camera.render(&world);
+}
+
+pub fn simple_light() {
+    let mut world = HittableList::new();
+
+    let permat = Arc::new(Lambertian::new(Box::new(Perlin::new(2.0))));
+    world.add(Box::new(Sphere::new(
+        Point3::new(0.0, -1000.0, 0.0), 
+        None, 
+        1000.0, 
+        permat.clone()
+    )));
+
+    world.add(Box::new(Sphere::new(
+        Point3::new(0.0, 2.0, 0.0), 
+        None, 
+        2.0, 
+        permat
+    )));
+
+    let difflight = Arc::new(DiffuseLight::from_colour(Colour::pure_diagonal(4.0)));
+    world.add(Box::new(Quad::new(
+        Point3::new(3.0, 1., -2.), 
+        Vec3::new(2., 0., 0.), 
+        Vec3::new(0., 2., 0.), 
+        difflight.clone()
+    )));
+    world.add(Box::new(Sphere::new(
+        Point3::new(0.0, 7.0, 0.0), 
+        None, 
+        2.0, 
+        difflight
+    )));
+
+    let camera_params: CameraParams = CameraParams { 
+        aspect_ratio: 16.0 / 9.0, 
+        image_width: 400, 
+        samples_per_pixel: 100, 
+        max_depth: 50, 
+
+        vfov: 20.0,
+        lookfrom: Point3::new(26.0, 3.0, 6.0), 
+        lookat: Point3::new(0., 2., 0.), 
+        vup: Point3::new(0.0, 1.0, 0.0), 
+        defocus_angle: 0.0, 
+        focus_dist: 10.0, 
+
+        background: Colour::zero(),
     };
 
     let camera = Camera::new(camera_params);
