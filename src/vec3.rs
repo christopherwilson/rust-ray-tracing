@@ -19,6 +19,10 @@ impl Vec3 {
         self.e[n]
     }
 
+    pub fn set(&mut self, axis: usize, val: f64) {
+        self.e[axis] = val;
+    }
+
     pub fn x(&self) -> f64 {
         self.e[0]
     }

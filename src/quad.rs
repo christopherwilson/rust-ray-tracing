@@ -73,11 +73,11 @@ impl Hittable for Quad {
     }
 }
 
-pub struct QuadBox {
+pub struct Cube {
     faces: HittableList,
 }
 
-impl QuadBox {
+impl Cube {
     pub fn new(a: &Point3, b: &Point3, mat: Arc<dyn Material>) -> Self {
         let mut faces = HittableList::new();
 
@@ -106,11 +106,11 @@ impl QuadBox {
         let bottom = Quad::new(Point3::new(min.x(), min.y(), min.z()), dx, dz, mat.clone());
         faces.add(Box::new(bottom));
 
-        QuadBox { faces }
+        Cube { faces }
     }
 }
 
-impl Hittable for QuadBox {
+impl Hittable for Cube {
     fn hit(&self, ray: &crate::ray::Ray, ray_t: Interval) -> Option<HitRecord> {
         self.faces.hit(ray, ray_t)
     }

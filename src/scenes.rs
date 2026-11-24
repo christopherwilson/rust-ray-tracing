@@ -3,13 +3,15 @@ use std::sync::Arc;
 use crate::camera::Camera;
 use crate::camera::CameraParams;
 use crate::colour::Colour;
+use crate::hittable::RotateY;
+use crate::hittable::Translate;
 use crate::hittable_list::HittableList;
 use crate::material::Dielectric;
 use crate::material::DiffuseLight;
 use crate::material::Lambertian;
 use crate::material::Metal;
 use crate::quad::Quad;
-use crate::quad::QuadBox;
+use crate::quad::Cube;
 use crate::texture::CheckerTexture;
 use crate::texture::ImageTexture;
 use crate::texture::Perlin;
@@ -485,15 +487,23 @@ pub fn cornell_box() {
         white.clone()
     )));
 
-    objects.push(Arc::new(QuadBox::new(
-        &Point3::new(130., 0., 65.), 
-        &Point3::new(295., 165., 230.), 
-        white.clone())));
+    let box1 = Arc::new(Cube::new(
+        &Point3::zero(),
+        &Point3::new(165., 330., 165.), 
+        white.clone()
+    ));
+    let box1 = Arc::new(RotateY::new(box1, 15.));
+    let box1 = Arc::new(Translate::new(box1, Vec3::new(265., 0., 295.)));
+    objects.push(box1);
 
-    objects.push(Arc::new(QuadBox::new(
-        &Point3::new(265., 0., 295.), 
-        &Point3::new(430., 330., 460.), 
-        white.clone())));
+    let box2 = Arc::new(Cube::new(
+        &Point3::new(0., 0., 0.), 
+        &Point3::pure_diagonal(165.),
+        white.clone()
+    ));
+    let box2 = Arc::new(RotateY::new(box2, -18.));
+    let box2 = Arc::new(Translate::new(box2, Vec3::new(130., 0., 65.)));
+    objects.push(box2);
 
 
     let world = BVHNode::new(objects);
