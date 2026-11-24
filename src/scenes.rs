@@ -3,6 +3,7 @@ use std::sync::Arc;
 use crate::camera::Camera;
 use crate::camera::CameraParams;
 use crate::colour::Colour;
+use crate::constant_medium::ConstantMedium;
 use crate::hittable::RotateY;
 use crate::hittable::Translate;
 use crate::hittable_list::HittableList;
@@ -503,6 +504,100 @@ pub fn cornell_box() {
     ));
     let box2 = Arc::new(RotateY::new(box2, -18.));
     let box2 = Arc::new(Translate::new(box2, Vec3::new(130., 0., 65.)));
+    objects.push(box2);
+
+
+    let world = BVHNode::new(objects);
+
+    let cam_params = CameraParams {
+        aspect_ratio: 1.0,
+        image_width: 600,
+        samples_per_pixel: 200,
+        max_depth: 50,
+
+        vfov: 40.0,
+        lookfrom: Point3::new(278., 278., -800.),
+        lookat: Point3::new(278., 278., 0.),
+        vup: Vec3::new(0.0, 1.0, 0.0),
+
+        defocus_angle: 0.0,
+        focus_dist: 10.0,
+        
+        background: Colour::zero(),
+    };
+
+    let camera = Camera::new(cam_params);
+    camera.render(&world);
+}
+
+pub fn cornell_smoke() {
+    let mut objects: Vec<Arc<dyn Hittable>> = Vec::new();
+
+    let red = Arc::new(Lambertian::from_rgb(0.65, 0.05, 0.05));
+    let white = Arc::new(Lambertian::from_rgb(0.73, 0.73, 0.73));
+    let green = Arc::new(Lambertian::from_rgb(0.12, 0.45, 0.15));
+    let light = Arc::new(DiffuseLight::from_colour(Colour::pure_diagonal(7.0)));
+
+    objects.push(Arc::new(Quad::new(
+        Point3::new(555.0, 0.0, 0.0),
+        Vec3::new(0.0, 555.0, 0.0),
+        Vec3::new(0.0, 0.0, 555.0),
+        green
+    )));
+
+    objects.push(Arc::new(Quad::new(
+        Point3::new(0.0, 0.0, 0.0),
+        Vec3::new(0.0, 555.0, 0.0),
+        Vec3::new(0.0, 0.0, 555.0),
+        red
+    )));
+
+    objects.push(Arc::new(Quad::new(
+        Point3::new(113., 554., 127.),
+        Vec3::new(330., 0., 0.),
+        Vec3::new(0., 0., 305.),
+        light
+    )));
+
+    objects.push(Arc::new(Quad::new(
+        Point3::new(0.0, 0.0, 0.0),
+        Vec3::new(555.0, 0.0, 0.0),
+        Vec3::new(0.0, 0.0, 555.0),
+        white.clone()
+    )));
+
+    objects.push(Arc::new(Quad::new(
+        Point3::new(555.0, 555.0, 555.0),
+        Vec3::new(-555.0, 0.0, 0.0),
+        Vec3::new(0.0, 0.0, -555.0),
+        white.clone()
+    )));
+
+    objects.push(Arc::new(Quad::new(
+        Point3::new(0.0, 0.0, 555.0),
+        Vec3::new(555.0, 0.0, 0.0),
+        Vec3::new(0.0, 555.0, 0.0),
+        white.clone()
+    )));
+
+    let box1 = Arc::new(Cube::new(
+        &Point3::zero(),
+        &Point3::new(165., 330., 165.), 
+        white.clone()
+    ));
+    let box1 = Arc::new(RotateY::new(box1, 15.));
+    let box1 = Box::new(Translate::new(box1, Vec3::new(265., 0., 295.)));
+    let box1 = Arc::new(ConstantMedium::new_colour(box1, 0.01, Colour::zero()));
+    objects.push(box1);
+
+    let box2 = Arc::new(Cube::new(
+        &Point3::new(0., 0., 0.), 
+        &Point3::pure_diagonal(165.),
+        white.clone()
+    ));
+    let box2 = Arc::new(RotateY::new(box2, -18.));
+    let box2 = Box::new(Translate::new(box2, Vec3::new(130., 0., 65.)));
+    let box2 = Arc::new(ConstantMedium::new_colour(box2, 0.01, Colour::pure_diagonal(1.)));
     objects.push(box2);
 
 

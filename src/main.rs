@@ -13,9 +13,10 @@ mod scenes;
 mod sphere;
 mod texture;
 mod vec3;
+mod constant_medium;
 
 fn main() {
-    let scene = 7;
+    let scene = 8;
 
     match scene {
         1 => scenes::moving_cover_bvh(),
@@ -25,6 +26,7 @@ fn main() {
         5 => scenes::quads(),
         6 => scenes::simple_light(),
         7 => scenes::cornell_box(),
+        8 => scenes::cornell_smoke(),
         _ => (),
     }
 }

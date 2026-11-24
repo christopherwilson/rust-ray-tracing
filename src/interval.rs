@@ -17,6 +17,7 @@ impl Default for Interval {
 
 impl Interval {
     pub const UNIT_INTERVAL: Interval = Interval { min: 0.0, max: 1.0 };
+    pub const UNIVERSE: Interval = Interval { min: f64::NEG_INFINITY, max: f64::INFINITY };
 
     pub fn new(min: f64, max: f64) -> Self {
         Interval { min, max }

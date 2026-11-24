@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use crate::{aabb::Aabb, hittable::{HitRecord, Hittable}, hittable_list::HittableList, interval::Interval, material::Material, vec3::{self, Point3, Vec3, cross, dot}};
+use crate::{aabb::Aabb, hittable::{HitRecord, Hittable}, hittable_list::HittableList, interval::Interval, material::Material, ray::Ray, vec3::{self, Point3, Vec3, cross, dot}};
 
 pub struct Quad {
     q: Point3,
@@ -111,7 +111,7 @@ impl Cube {
 }
 
 impl Hittable for Cube {
-    fn hit(&self, ray: &crate::ray::Ray, ray_t: Interval) -> Option<HitRecord> {
+    fn hit(&self, ray: &Ray, ray_t: Interval) -> Option<HitRecord> {
         self.faces.hit(ray, ray_t)
     }
 
