@@ -1,4 +1,6 @@
-use crate::{interval::Interval, ray::Ray, vec3::Point3};
+use std::ops::Add;
+
+use crate::{interval::Interval, ray::Ray, vec3::{Point3, Vec3}};
 
 const DELTA: f64 = 0.0001;
 #[derive(Default, Clone, Copy)]
@@ -78,5 +80,13 @@ impl Aabb {
             }
         }
         true
+    }
+}
+
+impl Add<Vec3> for Aabb {
+    type Output = Aabb;
+
+    fn add(self, rhs: Vec3) -> Self::Output {
+        Aabb::from_intervals(self.x + rhs.x(), self.y + rhs.y(), self.z + rhs.z())
     }
 }

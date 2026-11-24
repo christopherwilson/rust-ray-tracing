@@ -3,6 +3,8 @@ use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub};
 
 use rand::{random, random_range};
 
+use crate::aabb::Aabb;
+
 #[derive(Copy, Clone, Default, PartialEq, Debug)]
 pub struct Vec3 {
     e: [f64; 3],
@@ -113,6 +115,14 @@ impl Add for Vec3 {
 
     fn add(self, rhs: Self) -> Self::Output {
         Vec3::new(self.x() + rhs.x(), self.y() + rhs.y(), self.z() + rhs.z())
+    }
+}
+
+impl Add<Aabb> for Vec3 {
+    type Output = Aabb;
+
+    fn add(self, rhs: Aabb) -> Self::Output {
+        rhs + self
     }
 }
 

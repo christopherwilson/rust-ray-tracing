@@ -36,3 +36,34 @@ pub trait Hittable: Send + Sync {
 
     fn bounding_box(&self) -> Aabb;
 }
+
+pub struct Translate {
+    object: Arc<dyn Hittable>,
+    offset: Vec3,
+    bbox: Aabb,
+}
+
+impl Translate {
+    pub fn new(object: Arc<dyn Hittable>, offset: Vec3) -> Self {
+        let bbox = object.bounding_box() + offset;
+        Translate { object, offset, bbox }
+    }
+}
+
+impl Hittable for Translate {
+    fn hit(&self, ray: &Ray, ray_t: Interval) -> Option<HitRecord> {
+        let offset_ray = Ray::new(ray.origin() - self.offset, ray.direction(), ray.time());
+
+        if let Some(hit_record) = self.object.hit(&offset_ray, ray_t) {
+            let mut hit_record = hit_record;
+            hit_record.p += self.offset;
+            Some(hit_record)
+        } else {
+            None
+        }
+    }
+
+    fn bounding_box(&self) -> Aabb {
+        self.bbox
+    }
+}
