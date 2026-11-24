@@ -9,6 +9,7 @@ use crate::material::DiffuseLight;
 use crate::material::Lambertian;
 use crate::material::Metal;
 use crate::quad::Quad;
+use crate::quad::QuadBox;
 use crate::texture::CheckerTexture;
 use crate::texture::ImageTexture;
 use crate::texture::Perlin;
@@ -483,6 +484,17 @@ pub fn cornell_box() {
         Vec3::new(0.0, 555.0, 0.0),
         white.clone()
     )));
+
+    objects.push(Arc::new(QuadBox::new(
+        &Point3::new(130., 0., 65.), 
+        &Point3::new(295., 165., 230.), 
+        white.clone())));
+
+    objects.push(Arc::new(QuadBox::new(
+        &Point3::new(265., 0., 295.), 
+        &Point3::new(430., 330., 460.), 
+        white.clone())));
+
 
     let world = BVHNode::new(objects);
 
