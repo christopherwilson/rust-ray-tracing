@@ -623,3 +623,96 @@ pub fn cornell_smoke() {
     let camera = Camera::new(cam_params);
     camera.render(&world);
 }
+
+pub fn final_scene(image_width: u32, samples_per_pixel: u32, max_depth: u32) {
+    let mut cubes1: Vec<Arc<dyn Hittable>> = Vec::new();
+    let ground = Arc::new(Lambertian::from_colour(Colour::new(0.48, 0.83, 0.53)));
+
+    let boxes_per_side = 20;
+    for i in 0..boxes_per_side {
+        for j in 0..boxes_per_side {
+            let w = 100.;
+            let x0 = -1000. + i as f64 * w;
+            let z0 = -1000. + j as f64 * w;
+            let y0 = 0.;
+            let x1 = x0 + w;
+            let y1 = random_range(1.0..101.);
+            let z1 = z0 + w;
+
+            cubes1.push(Arc::new(Cube::new(&Point3::new(x0, y0, z0), &Point3::new(x1, y1, z1), ground.clone())));
+        }
+    }
+
+    let mut world = HittableList::new();
+
+    world.add(Box::new(BVHNode::new(cubes1)));
+
+    let light = Arc::new(DiffuseLight::from_colour(Colour::pure_diagonal(7.)));
+    world.add(Box::new(Quad::new(
+        Point3::new(123., 554., 147.), 
+        Vec3::new(300., 0., 0.), 
+        Vec3::new(0., 0., 265.), 
+        light
+    )));
+
+    let centre1 = Point3::new(400., 400., 200.);
+    let centre2 = centre1 + Vec3::new(30., 0., 0.);
+    let sphere_mat = Arc::new(Lambertian::from_rgb(0.7, 0.3, 0.1));
+    world.add(Box::new(Sphere::new(centre1, Some(centre2), 50., sphere_mat)));
+
+    world.add(Box::new(Sphere::new(
+        Point3::new(260., 150., 145.), 
+        None, 
+        50., 
+        Arc::new(Dielectric::new(1.5))
+    )));
+    world.add(Box::new(Sphere::new(
+        Point3::new(0., 150., 145.), 
+        None, 
+        50., 
+        Arc::new(Metal::new(Colour::new(0.8, 0.8, 0.9), 1.))
+    )));
+
+    let boundary = Box::new(Sphere::new(Point3::new(360., 150., 145.), None, 70., Arc::new(Dielectric::new(1.5))));
+    world.add(boundary);
+    let boundary = Box::new(Sphere::new(Point3::new(360., 150., 145.), None, 70., Arc::new(Dielectric::new(1.5))));
+    world.add(Box::new(ConstantMedium::new_colour(boundary, 0.2, Colour::new(0.2, 0.4, 0.9))));
+    let boundary = Box::new(Sphere::new(Point3::zero(), None, 5000., Arc::new(Dielectric::new(1.5))));
+    world.add(Box::new(ConstantMedium::new_colour(boundary, 0.0001, Colour::pure_diagonal(1.))));
+
+    let emat = Arc::new(Lambertian::new(Box::new(ImageTexture::new("image-textures/earthmap.jpg"))));
+    world.add(Box::new(Sphere::new(Point3::new(400., 200., 400.), None, 100., emat)));
+    let pertext = Box::new(Perlin::new(0.2));
+    world.add(Box::new(Sphere::new(Point3::new(220., 280., 300.), None, 80., Arc::new(Lambertian::new(pertext)))));
+
+    let mut cubes2: Vec<Arc<dyn Hittable>> = Vec::new();
+    let white = Arc::new(Lambertian::from_rgb(0.73, 0.73, 0.73));
+    let ns = 1000;
+    for _ in 0..ns {
+        cubes2.push(Arc::new(Sphere::new(Point3::random_range(0., 165.), None, 10., white.clone())));
+    }
+
+    world.add(Box::new(Translate::new(
+        Arc::new(RotateY::new(Arc::new(BVHNode::new(cubes2)), 15.)), 
+        Vec3::new(-100., 270., 395.)
+    )));
+
+
+    let camera_params: CameraParams = CameraParams { 
+        aspect_ratio: 1.0, 
+        image_width, 
+        samples_per_pixel, 
+        max_depth, 
+        vfov: 40., 
+        lookfrom: Point3::new(478., 278., -600.),
+        lookat: Point3::new(278., 278., 0.), 
+        vup: Vec3::new(0., 1., 0.), 
+        defocus_angle: 0., 
+        focus_dist: 10., 
+        background: Colour::zero() 
+    };
+
+    let cam = Camera::new(camera_params);
+
+    cam.render(&world);
+}
