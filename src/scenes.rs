@@ -625,6 +625,7 @@ pub fn cornell_smoke() {
 }
 
 pub fn final_scene(image_width: u32, samples_per_pixel: u32, max_depth: u32) {
+    // Floor
     let mut cubes1: Vec<Arc<dyn Hittable>> = Vec::new();
     let ground = Arc::new(Lambertian::from_colour(Colour::new(0.48, 0.83, 0.53)));
 
@@ -647,6 +648,7 @@ pub fn final_scene(image_width: u32, samples_per_pixel: u32, max_depth: u32) {
 
     world.add(Box::new(BVHNode::new(cubes1)));
 
+    // Light
     let light = Arc::new(DiffuseLight::from_colour(Colour::pure_diagonal(7.)));
     world.add(Box::new(Quad::new(
         Point3::new(123., 554., 147.), 
@@ -655,17 +657,20 @@ pub fn final_scene(image_width: u32, samples_per_pixel: u32, max_depth: u32) {
         light
     )));
 
+    // Moving Sphere
     let centre1 = Point3::new(400., 400., 200.);
     let centre2 = centre1 + Vec3::new(30., 0., 0.);
     let sphere_mat = Arc::new(Lambertian::from_rgb(0.7, 0.3, 0.1));
     world.add(Box::new(Sphere::new(centre1, Some(centre2), 50., sphere_mat)));
 
+    // Glass Sphere
     world.add(Box::new(Sphere::new(
         Point3::new(260., 150., 45.), 
         None, 
         50., 
         Arc::new(Dielectric::new(1.5))
     )));
+    // Metal sphere on right
     world.add(Box::new(Sphere::new(
         Point3::new(0., 150., 145.), 
         None, 
@@ -673,18 +678,27 @@ pub fn final_scene(image_width: u32, samples_per_pixel: u32, max_depth: u32) {
         Arc::new(Metal::new(Colour::new(0.8, 0.8, 0.9), 1.))
     )));
 
+    // Blue shiny sphere
+    //    Glass shell
     let boundary = Box::new(Sphere::new(Point3::new(360., 150., 145.), None, 70., Arc::new(Dielectric::new(1.5))));
     world.add(boundary);
+    //    Blue interior
     let boundary = Box::new(Sphere::new(Point3::new(360., 150., 145.), None, 70., Arc::new(Dielectric::new(1.5))));
     world.add(Box::new(ConstantMedium::new_colour(boundary, 0.2, Colour::new(0.2, 0.4, 0.9))));
+
+    // Fog
     let boundary = Box::new(Sphere::new(Point3::zero(), None, 5000., Arc::new(Dielectric::new(1.5))));
     world.add(Box::new(ConstantMedium::new_colour(boundary, 0.0001, Colour::pure_diagonal(1.))));
 
+    // Globe
     let emat = Arc::new(Lambertian::new(Box::new(ImageTexture::new("image-textures/earthmap.jpg"))));
     world.add(Box::new(Sphere::new(Point3::new(400., 200., 400.), None, 100., emat)));
+
+    // Perlin sphere
     let pertext = Box::new(Perlin::new(0.2));
     world.add(Box::new(Sphere::new(Point3::new(220., 280., 300.), None, 80., Arc::new(Lambertian::new(pertext)))));
 
+    // Cube of spheres
     let mut cubes2: Vec<Arc<dyn Hittable>> = Vec::new();
     let white = Arc::new(Lambertian::from_rgb(0.73, 0.73, 0.73));
     let ns = 1000;

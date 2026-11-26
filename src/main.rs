@@ -1,5 +1,3 @@
-use crate::scenes::final_scene;
-
 mod aabb;
 mod bvh;
 mod camera;
@@ -18,7 +16,7 @@ mod vec3;
 mod constant_medium;
 
 fn main() {
-    let scene = 9;
+    let scene = 0;
 
     match scene {
         1 => scenes::moving_cover_bvh(),
