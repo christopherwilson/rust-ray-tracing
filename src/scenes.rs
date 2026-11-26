@@ -661,7 +661,7 @@ pub fn final_scene(image_width: u32, samples_per_pixel: u32, max_depth: u32) {
     world.add(Box::new(Sphere::new(centre1, Some(centre2), 50., sphere_mat)));
 
     world.add(Box::new(Sphere::new(
-        Point3::new(260., 150., 145.), 
+        Point3::new(260., 150., 45.), 
         None, 
         50., 
         Arc::new(Dielectric::new(1.5))

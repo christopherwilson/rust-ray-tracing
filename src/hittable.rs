@@ -137,15 +137,15 @@ impl Hittable for RotateY {
             let mut record = record;
 
             record.p = Point3::new(
-                (self.cos_theta * record.p.x()) - (self.sin_theta * record.p.z()), 
+                (self.cos_theta * record.p.x()) + (self.sin_theta * record.p.z()), 
                 record.p.y(), 
-                (self.sin_theta * record.p.x()) + (self.cos_theta * record.p.z())
+                (-self.sin_theta * record.p.x()) + (self.cos_theta * record.p.z())
             );
 
             record.normal = Point3::new(
-                (self.cos_theta * record.normal.x()) - (self.sin_theta * record.normal.z()), 
+                (self.cos_theta * record.normal.x()) + (self.sin_theta * record.normal.z()), 
                 record.normal.y(), 
-                (self.sin_theta * record.normal.x()) + (self.cos_theta * record.normal.z())
+                (-self.sin_theta * record.normal.x()) + (self.cos_theta * record.normal.z())
             );
 
             Some(record)
